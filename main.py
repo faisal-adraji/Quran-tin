@@ -39,21 +39,9 @@ from kivy.lang import Builder
 Builder.load_string('''
 #:import Factory kivy.factory.Factory
 <Tin>:
-    BoxLayout:
-        id: b1
-        ScrollView:
-            id: s1
-            size_hint_x: 0.9
-            BoxLayout:
-                id: b2
-                size_hint_y: 300
-                orientation: 'vertical' #vertical
-
-        Button:
-            text: '+'
-            size_hint_x: 0.1
-            on_press:
-                s1.scroll_to(b2.children[100])
+    sv: sv
+    MyScrollView:
+        id: sv
 ''')
 
 class MyLabel(Label):
@@ -88,7 +76,7 @@ class Tin(FloatLayout):
 
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
-        #LAST_PAGE-1
+        #LAST_PAGE-1 
         #+1.5 is for updating page number at the midle of page 
         lbl.text = 'page : ' + str(int(((1-sv.scroll_y)*(LAST_PAGE-1))+1.5))
         lbl_spd.text = 'speed : ' + str(sv.spd/1000)
@@ -129,8 +117,10 @@ class TinApp(App):
         #Window.set_title('TinApp')
         #self.title = 'Tin'
         app = Tin(size=(400, 400))
+
+        #finaly found the way for calling obect from kv file
+        sv  = app.ids.sv
         box = BoxLayout(size_hint_y= INITIAL_SIZE, orientation= 'vertical')#51
-        sv  = MyScrollView()
         ti = TextInput(text= '1',size_hint=(.15, .05),pos_hint={'x':.5, 'y':.0}, multiline=False) # height= '32dp'
          
         lbl = MyLabel(text= 'void', markup= True, size_hint=(.2, .06),pos= (200,50))      
@@ -192,7 +182,6 @@ class TinApp(App):
        
         #fill thee scrollview with the unique boxlayout witch contain all pages
         sv.add_widget(box)
-        app.add_widget(sv)
         app.add_widget(autoscroll_btn)
         app.add_widget(spd_dwn_btn)
         app.add_widget(spd_up_btn)
