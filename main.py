@@ -39,9 +39,26 @@ from kivy.lang import Builder
 Builder.load_string('''
 #:import Factory kivy.factory.Factory
 <Tin>:
-    sv: sv
     MyScrollView:
         id: sv
+        BoxLayout:
+            id: box
+            size_hint_y: 500
+            orientation: 'vertical'
+    MyLabel:
+        id: lbl
+        text: 'void'
+        markup: True
+        size_hint: (.2, .06)
+        pos: (200,50)
+
+    Button:
+        id: autoscroll_btn
+        text: 'autoscroll'
+        size_hint: (.15, .05)
+        pos_hint: {'x':.425, 'y':.95}
+        on_press: root.autoscroll(sv, box)
+
 ''')
 
 class MyLabel(Label):
@@ -62,17 +79,14 @@ class Tin(FloatLayout):
 
     def __init__(self, **kwargs):
         super(Tin, self).__init__(**kwargs)
-
-    
-        
         
 
     def update(self, dt):
-        bl = self.children[10].children[0]
-        sv = self.children[10]
-        lbl_spd = self.children[2]
+        bl = self.ids.box
+        sv = self.ids.sv
+        lbl_spd = self.children[0]
         lbl_siz = self.children[1]
-        lbl = self.children[0]
+        lbl = self.ids.lbl
 
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
@@ -103,6 +117,11 @@ class Tin(FloatLayout):
         for i in range(end, LAST_PAGE):
             bl.children[LAST_PAGE-1- i].source = 'free.jpg'
 
+    def autoscroll(self, sv, box):
+        sv.scroll_to(box.children[0], d= sv.spd)
+        print 'this is scroll'
+        #self.scrolling = 1
+
 class TinApp(App):
 
     scrolling = 0
@@ -120,24 +139,21 @@ class TinApp(App):
 
         #finaly found the way for calling obect from kv file
         sv  = app.ids.sv
-        box = BoxLayout(size_hint_y= INITIAL_SIZE, orientation= 'vertical')#51
+        box = app.ids.box
         ti = TextInput(text= '1',size_hint=(.15, .05),pos_hint={'x':.5, 'y':.0}, multiline=False) # height= '32dp'
          
-        lbl = MyLabel(text= 'void', markup= True, size_hint=(.2, .06),pos= (200,50))      
+        lbl = app.ids.lbl    
         lbl_scrl_spd = MyLabel(text= 'void', markup= True, size_hint=(.25, .06),pos= (400,50))      
         lbl_viw_siz = MyLabel(text= 'void', markup= True, size_hint=(.25, .06),pos= (0,50))      
 
     #functions for buttons
-        def autoscroll(instance):
-            sv.scroll_to(box.children[0], d= sv.spd)
-            self.scrolling = 1
-            #popup = Popup(title='im scrolling', size_hint=(0.5, 0.5))
-            #popup.open()
         
         def spd_dwn(instance):
             sv.spd = sv.spd + self.step
             if self.scrolling:
                 sv.scroll_to(box.children[0], d= sv.spd)
+            #popup = Popup(title='im scrolling', size_hint=(0.5, 0.5))
+            #popup.open()
         
         def spd_up(instance):
             sv.spd = sv.spd - self.step
@@ -154,8 +170,6 @@ class TinApp(App):
             box.size_hint[1]-= 10
         
     # initializing graphic objects
-        autoscroll_btn = Button(text= 'autoscroll', size_hint=(.15, .05),pos_hint={'x':.425, 'y':.95})
-        autoscroll_btn.bind(on_press=autoscroll)
         
         spd_dwn_btn = Button(text= 'spd-', size_hint=(.15, .05),pos_hint={'x':.7, 'y':.95})
         spd_dwn_btn.bind(on_press=spd_dwn)
@@ -181,8 +195,7 @@ class TinApp(App):
             box.add_widget(img, len(box.children))
        
         #fill thee scrollview with the unique boxlayout witch contain all pages
-        sv.add_widget(box)
-        app.add_widget(autoscroll_btn)
+        #app.add_widget(autoscroll_btn)
         app.add_widget(spd_dwn_btn)
         app.add_widget(spd_up_btn)
         app.add_widget(goto_page_btn)
@@ -191,7 +204,7 @@ class TinApp(App):
         app.add_widget(ti)
         app.add_widget(lbl_scrl_spd)
         app.add_widget(lbl_viw_siz)
-        app.add_widget(lbl)
+        #app.add_widget(lbl)
 
         Clock.schedule_interval(app.update, 1.0 / 30.0)
         
