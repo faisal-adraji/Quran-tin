@@ -40,84 +40,140 @@ from kivy.lang import Builder
 Builder.load_string('''
 #:import Factory kivy.factory.Factory
 <Tin>:
+
     MyScrollView:
         id: sv
         BoxLayout:
             id: box
             size_hint_y: 500
             orientation: 'vertical'
-    MyLabel:
+
+    Image:
+        id: lbl_bg
+        size_hint: (.1, .05)
+        pos_hint: {'x':.45, 'y':.0}
+        #source: 'free.png'
+        color: .4, .4, .4, 1
+        allow_stretch: True
+
+    Label:
         id: lbl
         text: 'void'
         markup: True
-        size_hint: (.2, .06)
-        pos: (200,50)
+        size_hint: (.1, .05)
+        pos_hint: {'x':.45, 'y':.0}
+        # size_hint: (.2, .06)
+        #pos: (200,0)
 
-    MyLabel:
-        id: lbl_scrl_spd
-        text: 'void'
-        markup: True
-        size_hint: (.25, .06)
-        pos: ((400,50))
 
-    MyLabel:
-        id: lbl_viw_siz
-        text: 'void'
-        markup: True
-        size_hint: (.25, .06)
-        pos: (0,50)
-
+    # Button:
+    #     id: menu_btn
+    #     size_hint: (.05, .05)
+    #     pos_hint: {'x':.4725, 'y':.95}
+    #     on_press: root.show_menu(menu)
     Button:
-        id: autoscroll_btn
-        text: 'autoscroll'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.425, 'y':.95}
-        on_press: root.autoscroll(sv, box)
+        id: menu_btn
+        size_hint: (.05, .05)
+        pos_hint: {'x':.9, 'y':.9}
+        on_press: root.show_menu(menu)
+    Button:
+        id: menu_btn
+        size_hint: (.05, .05)
+        pos_hint: {'x':.05, 'y':.9}
+        on_press: root.show_menu(menu)
 
-    Button:
-        id: spd_dwn_btn
-        text: 'spd-'
-        size_hint:(.15, .05)
-        pos_hint: {'x':.7, 'y':.95}
-        on_press: root.spd_dwn(sv, box)
 
-    Button:
-        id: spd_up_btn
-        text: 'spd+'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.15, 'y':.95}
-        on_press: root.spd_up(sv, box)
-        
-    Button:
-        id: goto_page_btn
-        text: 'goto'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.7, 'y':.0}
-        on_press: root.goto_page(sv, box, ti)
-        
-    Button:
-        id: siz_dwn_btn
-        text: 'down'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.1, 'y':.0}
-        on_press: root.siz_dwn(box)
-        
-    Button:
-        id: siz_up_btn
-        text: 'up'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.3, 'y':.0}
-        on_press: root.siz_up(box)
+    
 
-    TextInput:
-        id: ti
-        text: '1'
-        size_hint: (.15, .05)
-        pos_hint: {'x':.5, 'y':.0}
-        multiline: False
-        on_text_validate: root.goto_page
-        # height= '32dp'
+    # menu
 
+    FloatLayout:
+        id: menu
+        text: 'menu'
+        # position and size to the parent, root in this case
+        size_hint: (.90, .40)
+        pos_hint: {'x':.05, 'y':.05}
+        orientation: 'vertical'
+        opacity: 1 if root.menu else 0
+
+        Image:
+            id: menu_bg
+            size: menu.size
+            pos: menu.pos
+            #source: 'free.png'
+            color: .2, .2, .2, 1
+            allow_stretch: True
+
+        BoxLayout:
+            # position and size to the parent, menu in this case
+            size_hint: (.33, .1)
+            pos_hint: {'x':.33, 'y':.1}
+            #orientation: 'vertical'
+
+            TextInput:
+                id: ti
+                text: '1'
+                multiline: False
+                on_text_validate: root.goto_page
+                # height= '32dp'
+            Button:
+                id: goto_page_btn
+                text: 'goto'
+                on_press: root.goto_page(sv, box, ti)
+
+        BoxLayout:
+            # position and size to the parent, menu in this case
+            size_hint: (.33, .1)
+            pos_hint: {'x':.33, 'y':.30}
+
+            Button:
+                id: spd_dwn_btn
+                text: 'spd-'
+                on_press: root.spd_dwn(sv, box)
+            MyLabel:
+                id: lbl_scrl_spd
+                text: 'void'
+                markup: True
+            Button:
+                id: spd_up_btn
+                text: 'spd+'
+                on_press: root.spd_up(sv, box)
+
+        BoxLayout:
+            # position and size to the parent, menu in this case
+            size_hint: (.33, .1)
+            pos_hint: {'x':.33, 'y':.50}
+
+            Button:
+                id: siz_dwn_btn
+                text: 'down'
+                # size_hint: (.15, .05)
+                # pos_hint: {'x':.2, 'y':.8}
+                on_press: root.siz_dwn(box)
+
+            MyLabel:
+                id: lbl_viw_siz
+                text: 'void'
+                markup: True
+                # size_hint: (.25, .06)
+                # pos: (0,440)
+                
+            Button:
+                id: siz_up_btn
+                text: 'up'
+                #size_hint: (.15, .05)
+                #pos_hint: {'x':.8, 'y':.8}
+                on_press: root.siz_up(box)
+
+        BoxLayout:
+            # position and size to the parent, menu in this case
+            size_hint: (.33, .1)
+            pos_hint: {'x':.33, 'y':.7}
+
+            Button:
+                id: autoscroll_btn
+                text: 'autoscroll'
+                on_press: root.autoscroll(sv, box)
 
 ''')
 
@@ -137,6 +193,7 @@ class Tin(FloatLayout):
 
 
     scrolling = 0
+    menu = 0
     step = 1000
     
     #ti = ObjectProperty(None)
@@ -202,12 +259,23 @@ class Tin(FloatLayout):
     
     def goto_page(self, sv, box, ti):
         sv.scroll_to(box.children[LAST_PAGE - int(ti.text)], d=0.2)
+        self.scrolling = 0
     
     def siz_up(self, box):
         box.size_hint[1]+= 10
     
     def siz_dwn(self, box):
         box.size_hint[1]-= 10
+
+    def show_menu(self, menu):
+        if self.menu:
+            menu.opacity = 0
+            menu.size_hint_x = .0
+            self.menu = 0
+        else:
+            menu.opacity = 1
+            menu.size_hint_x = .9
+            self.menu = 1
 
 class TinApp(App):
 
