@@ -6,16 +6,16 @@ start   :   12-2017
 kivy.require("1.9.0")
 '''
 
-FIRST_PAGE = 0
-LAST_PAGE = 603
-SIZE_STEP = 100
-SPEED_STEP = 1000
-INITIAL_SPEED =10000
-INITIAL_SIZE =500
+FIRST_PAGE= 0
+LAST_PAGE= 603
+SIZE_STEP= 100
+SPEED_STEP= 1000
+INITIAL_SPEED= 10000
+INITIAL_SIZE= 500
 
 
 #import sys
-#sys.path.append("/storage/emulated/0/kivy/tibib")
+#sys.path.append("/storage/emulated/0/kivy/Tin")
 
 import threading
 
@@ -195,6 +195,7 @@ class Tin(FloatLayout):
     scrolling = 0
     menu = 0
     step = 1000
+    global curt_page
     
     #ti = ObjectProperty(None)
 
@@ -209,11 +210,14 @@ class Tin(FloatLayout):
         lbl_siz = self.ids.lbl_viw_siz
         lbl = self.ids.lbl
 
+
+        self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE-1))+1.5)
+
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
         #LAST_PAGE-1 
         #+1.5 is for updating page number at the midle of page 
-        lbl.text = 'page : ' + str(int(((1-sv.scroll_y)*(LAST_PAGE-1))+1.5))
+        lbl.text = 'page : ' + str(self.curt_page)
         lbl_spd.text = 'speed : ' + str(sv.spd/1000)
         lbl_siz.text = 'size : ' + str(bl.size_hint[1])
 
@@ -280,6 +284,7 @@ class Tin(FloatLayout):
 class TinApp(App):
 
     global Window
+    global wdg
 
 
     def build(self):
@@ -287,36 +292,50 @@ class TinApp(App):
         #Window.clearcolor = (.95,.95,.95,1)
         #Window.size = (1024, 768)
         #Window.set_title('TinApp')
-        #self.title = 'Tin'
-        app = Tin(size=(400, 400))
+        self.title = 'Tin'
+        self.icon = 'tin.png'
+        self.wdg = Tin(size=(400, 400))
+        main_wdg = self.wdg
 
         #finaly found the way for calling object from kv file
-        sv  = app.ids.sv
-        box = app.ids.box
-        ti  = app.ids.ti
+        sv  = main_wdg.ids.sv
+        box = main_wdg.ids.box
+        ti  = main_wdg.ids.ti
          
-        lbl = app.ids.lbl    
-        lbl_scrl_spd = app.ids.lbl_scrl_spd
-        lbl_viw_siz = app.ids.lbl_viw_siz
+        lbl = main_wdg.ids.lbl    
+        lbl_scrl_spd = main_wdg.ids.lbl_scrl_spd
+        lbl_viw_siz = main_wdg.ids.lbl_viw_siz
 
 
+        #restore last session
+        f = open("save.dat")
+        self.curt_page = f.read()
+        f.close()
         
         
         
     # initializing graphic objects
         
-        
-        
         #fill boxlayout with pages
         for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
-            strg=('pages/page_' + str(i) + '.jpg')
+            strg =('pages/page_' + str(i) + '.jpg')
             img = Image(source= 'free.jpg')
             box.add_widget(img, len(box.children))
-       
 
-        Clock.schedule_interval(app.update, 1.0 / 30.0)
+
+        sv.scroll_y = 1 - float(self.curt_page)/604
+
+        Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
         
-        return app
+        return main_wdg
+
+    def on_stop(self):
+        curt_page = self.wdg.curt_page
+        f = open("save.dat", "w")
+        f.write( str(curt_page) )  
+        # f.write(  str((1 - SCROLL_Y/1)*604)  )  
+        f.close()
+
 
 
 if __name__ == '__main__':
