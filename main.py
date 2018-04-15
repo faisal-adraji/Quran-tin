@@ -85,7 +85,9 @@ Builder.load_string('''
 
     
 
-    # menu
+# menu
+
+
 
     FloatLayout:
         id: menu
@@ -193,7 +195,7 @@ class Tin(FloatLayout):
 
 
     scrolling = 0
-    menu = 0
+    menu = 1
     step = 1000
     global curt_page
     
@@ -305,6 +307,8 @@ class TinApp(App):
         lbl = main_wdg.ids.lbl    
         lbl_scrl_spd = main_wdg.ids.lbl_scrl_spd
         lbl_viw_siz = main_wdg.ids.lbl_viw_siz
+
+
 
 
         #restore last session
