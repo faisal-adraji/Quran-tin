@@ -6,18 +6,13 @@ start   :   12-2017
 kivy.require("1.9.0")
 '''
 
-FIRST_PAGE= 0
-LAST_PAGE= 603
-SIZE_STEP= 100
-SPEED_STEP= 1000
-INITIAL_SPEED= 10000
-INITIAL_SIZE= 500
-
 
 #import sys
 #sys.path.append("/storage/emulated/0/kivy/Tin")
 
-import threading
+# import threading
+import kivy
+kivy.require("1.9.0")
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -29,16 +24,26 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 
-from Sv import MyScrollView
+from kivy.animation import Animation
+from kivy.uix.scrollview import ScrollView
+from kivy.metrics import sp, dp
+
+# from tinsv import MyScrollView
+
+
+FIRST_PAGE= 0
+LAST_PAGE= 604
+SPEED_STEP= 1000
+INITIAL_SPEED= 10000
+INITIAL_SIZE= 500
+
 
 from kivy.lang import Builder
 
 Builder.load_string('''
-#:import Factory kivy.factory.Factory
 <Tin>:
 
     MyScrollView:
@@ -50,9 +55,8 @@ Builder.load_string('''
 
     Image:
         id: lbl_bg
-        size_hint: (.1, .05)
+        size_hint: (.2, .05)
         pos_hint: {'x':.45, 'y':.0}
-        #source: 'free.png'
         color: .4, .4, .4, 1
         allow_stretch: True
 
@@ -60,7 +64,7 @@ Builder.load_string('''
         id: lbl
         text: 'void'
         markup: True
-        size_hint: (.1, .05)
+        size_hint: (.2, .05)
         pos_hint: {'x':.45, 'y':.0}
         # size_hint: (.2, .06)
         #pos: (200,0)
@@ -72,14 +76,14 @@ Builder.load_string('''
     #     pos_hint: {'x':.4725, 'y':.95}
     #     on_press: root.show_menu(menu)
     Button:
-        id: menu_btn
-        size_hint: (.05, .05)
-        pos_hint: {'x':.9, 'y':.9}
+        id: menu_btn_1
+        size_hint: (.1, .05)
+        pos_hint: {'x':.05, 'y':.9}
         on_press: root.show_menu(menu)
     Button:
-        id: menu_btn
-        size_hint: (.05, .05)
-        pos_hint: {'x':.05, 'y':.9}
+        id: menu_btn_2
+        size_hint: (.1, .05)
+        pos_hint: {'x':.85, 'y':.9}
         on_press: root.show_menu(menu)
 
 
@@ -108,8 +112,8 @@ Builder.load_string('''
 
         BoxLayout:
             # position and size to the parent, menu in this case
-            size_hint: (.33, .1)
-            pos_hint: {'x':.33, 'y':.1}
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.1}
             #orientation: 'vertical'
 
             TextInput:
@@ -125,8 +129,8 @@ Builder.load_string('''
 
         BoxLayout:
             # position and size to the parent, menu in this case
-            size_hint: (.33, .1)
-            pos_hint: {'x':.33, 'y':.30}
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.30}
 
             Button:
                 id: spd_dwn_btn
@@ -143,8 +147,8 @@ Builder.load_string('''
 
         BoxLayout:
             # position and size to the parent, menu in this case
-            size_hint: (.33, .1)
-            pos_hint: {'x':.33, 'y':.50}
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.50}
 
             Button:
                 id: siz_dwn_btn
@@ -169,15 +173,65 @@ Builder.load_string('''
 
         BoxLayout:
             # position and size to the parent, menu in this case
-            size_hint: (.33, .1)
-            pos_hint: {'x':.33, 'y':.7}
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.7}
 
             Button:
                 id: autoscroll_btn
                 text: 'autoscroll'
                 on_press: root.autoscroll(sv, box)
 
-''')
+    ''')
+
+
+class MyScrollView(ScrollView):
+    spd = 10000
+    def scroll_to(self, widget, padding=10, animate=True, d=200):
+
+        if not self.parent:
+            return
+
+        # if _viewport is layout and has pending operation, reschedule
+        if hasattr(self._viewport, 'do_layout'):
+            if self._viewport._trigger_layout.is_triggered:
+                Clock.schedule_once(
+                     lambda *dt: self.scroll_to(widget, padding, animate))
+                return
+
+        if isinstance(padding, (int, float)):
+            padding = (padding, padding)
+
+        pos = self.parent.to_widget(*widget.to_window(*widget.pos))
+        cor = self.parent.to_widget(*widget.to_window(widget.right,
+                                                      widget.top))
+
+        dx = dy = 0
+
+        if pos[1] < self.y:
+            dy = self.y - pos[1] + dp(padding[1])
+        elif cor[1] > self.top:
+            dy = self.top - cor[1] - dp(padding[1])
+
+        if pos[0] < self.x:
+            dx = self.x - pos[0] + dp(padding[0])
+        elif cor[0] > self.right:
+            dx = self.right - cor[0] - dp(padding[0])
+
+        dsx, dsy = self.convert_distance_to_scroll(dx, dy)
+        sxp = min(1, max(0, self.scroll_x - dsx))
+        syp = min(1, max(0, self.scroll_y - dsy))
+
+        if animate:
+            if animate is True:
+                animate = {'d': d, 't': 'out_quad'} #0.2
+            Animation.stop_all(self, 'scroll_x', 'scroll_y')
+            Animation(scroll_x=sxp, scroll_y=syp, **animate).start(self)
+        else:
+            self.scroll_x = sxp
+            self.scroll_y = syp
+
+
+
 
 class MyLabel(Label):
     def on_size(self, *args):
@@ -321,7 +375,8 @@ class TinApp(App):
     # initializing graphic objects
         
         #fill boxlayout with pages
-        for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
+        # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
+        for i in range(FIRST_PAGE, LAST_PAGE):
             strg =('pages/page_' + str(i) + '.jpg')
             img = Image(source= 'free.jpg')
             box.add_widget(img, len(box.children))
