@@ -48,16 +48,16 @@ Builder.load_string('''
 
     MyScrollView:
         id: sv
+        on_touch_down: root.hide_menu(menu)
         BoxLayout:
             id: box
             size_hint_y: 500
-            size_hint_x: 1
             orientation: 'vertical'
 
     Image:
         id: lbl_bg
-        size_hint: (.2, .05)
-        pos_hint: {'x':.45, 'y':.0}
+        size_hint: (1, .05)
+        pos_hint: {'x':.0, 'y':.0}
         color: .4, .4, .4, 1
         allow_stretch: True
 
@@ -66,7 +66,7 @@ Builder.load_string('''
         text: 'void'
         markup: True
         size_hint: (.2, .05)
-        pos_hint: {'x':.45, 'y':.0}
+        pos_hint: {'x':.4, 'y':.0}
         # size_hint: (.2, .06)
         #pos: (200,0)
 
@@ -78,13 +78,8 @@ Builder.load_string('''
     #     on_press: root.show_menu(menu)
     Button:
         id: menu_btn_1
-        size_hint: (.1, .05)
-        pos_hint: {'x':.05, 'y':.9}
-        on_press: root.show_menu(menu)
-    Button:
-        id: menu_btn_2
-        size_hint: (.1, .05)
-        pos_hint: {'x':.85, 'y':.9}
+        size_hint: (1, .1)
+        pos_hint: {'x':.0, 'y':.93}
         on_press: root.show_menu(menu)
 
 
@@ -111,45 +106,35 @@ Builder.load_string('''
             color: .2, .2, .2, 1
             allow_stretch: True
 
+
+        Label:
+            text: 'title'
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.9}
+            font_size: 30
+            color: .0, .0, 1, 1
+            
         BoxLayout:
             # position and size to the parent, menu in this case
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.1}
-            #orientation: 'vertical'
+            pos_hint: {'x':.17, 'y':.7}
 
-            TextInput:
-                id: ti
-                text: '1'
-                multiline: False
-                on_text_validate: root.goto_page
-                # height= '32dp'
             Button:
-                id: goto_page_btn
-                text: 'goto'
-                on_press: root.goto_page(sv, box, ti)
+                id: autoscroll_btn
+                text: 'autoscroll'
+                on_press: root.autoscroll(sv, box)
 
-        BoxLayout:
-            # position and size to the parent, menu in this case
+                
+        Label:
+            text: 'size'
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.30}
-
-            Button:
-                id: spd_dwn_btn
-                text: 'spd-'
-                on_press: root.spd_dwn(sv, box)
-            MyLabel:
-                id: lbl_scrl_spd
-                text: 'void'
-                markup: True
-            Button:
-                id: spd_up_btn
-                text: 'spd+'
-                on_press: root.spd_up(sv, box)
+            pos_hint: {'x':.17, 'y':.55}
+            font_size: 20
 
         BoxLayout:
             # position and size to the parent, menu in this case
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.50}
+            pos_hint: {'x':.17, 'y':.45}
 
             Button:
                 id: siz_dwn_btn
@@ -172,15 +157,46 @@ Builder.load_string('''
                 #pos_hint: {'x':.8, 'y':.8}
                 on_press: root.siz_up(box)
 
+        Label:
+            text: 'time per page'
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.3}
+            font_size: 20
+
         BoxLayout:
             # position and size to the parent, menu in this case
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.7}
+            pos_hint: {'x':.17, 'y':.2}
 
             Button:
-                id: autoscroll_btn
-                text: 'autoscroll'
-                on_press: root.autoscroll(sv, box)
+                id: spd_dwn_btn
+                text: '-'
+                on_press: root.spd_dwn(sv, box)
+            MyLabel:
+                id: lbl_scrl_spd
+                text: 'void'
+                markup: True
+            Button:
+                id: spd_up_btn
+                text: '+'
+                on_press: root.spd_up(sv, box)
+
+        BoxLayout:
+            # position and size to the parent, menu in this case
+            size_hint: (.66, .1)
+            pos_hint: {'x':.17, 'y':.05}
+            #orientation: 'vertical'
+
+            TextInput:
+                id: ti
+                text: '1'
+                multiline: False
+                on_text_validate: root.goto_page
+                # height= '32dp'
+            Button:
+                id: goto_page_btn
+                text: 'goto'
+                on_press: root.goto_page(sv, box, ti)
 
     ''')
 
@@ -224,7 +240,7 @@ class MyScrollView(ScrollView):
 
         if animate:
             if animate is True:
-                animate = {'d': d, 't': 'out_quad'} #0.2
+                animate = {'d': d, 't': 'linear'} #0.2
             Animation.stop_all(self, 'scroll_x', 'scroll_y')
             Animation(scroll_x=sxp, scroll_y=syp, **animate).start(self)
         else:
@@ -251,7 +267,7 @@ class Tin(FloatLayout):
 
     scrolling = 0
     menu = 1
-    step = 1000
+    step = 1
     global curt_page
     
     #ti = ObjectProperty(None)
@@ -274,9 +290,9 @@ class Tin(FloatLayout):
         #1-sv.scroll_y because scroll_y is reversed
         #LAST_PAGE-1 
         #+1.5 is for updating page number at the midle of page 
-        lbl.text = 'page : ' + str(self.curt_page)
-        lbl_spd.text = 'speed : ' + str(sv.spd/1000)
-        lbl_siz.text = 'size : ' + str(bl.size_hint[1])
+        lbl.text = str(self.curt_page)
+        lbl_spd.text = str(sv.spd)
+        lbl_siz.text = str(bl.size_hint[1])
 
         #he next linesare for manual page's texture buffer handler
 
@@ -298,29 +314,29 @@ class Tin(FloatLayout):
             bl.children[LAST_PAGE- i].source = strg
 
 
-        print beg
-        print mid
-        print end
-
 
     #functions for buttons
 
     def autoscroll(self, sv, box):
-        sv.scroll_to(box.children[0], d= sv.spd)
-        print 'this is scroll'
+        sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
+        print sv.spd * (LAST_PAGE - self.curt_page)
         self.scrolling = 1
 
     def spd_dwn(self, sv, box):
-            sv.spd = sv.spd + self.step
+            sv.spd = sv.spd - self.step
             if self.scrolling:
-                sv.scroll_to(box.children[0], d= sv.spd)
+                sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
+            # print sv.spd * (LAST_PAGE - self.curt_page)
+            # print LAST_PAGE
+            # print self.curt_page
+            # print sv.spd
             #popup = Popup(title='im scrolling', size_hint=(0.5, 0.5))
             #popup.open()
         
     def spd_up(self, sv, box):
-        sv.spd = sv.spd - self.step
+        sv.spd = sv.spd + self.step
         if self.scrolling:
-            sv.scroll_to(box.children[0], d= sv.spd)
+            sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
     
     def goto_page(self, sv, box, ti):
         sv.scroll_to(box.children[LAST_PAGE - int(ti.text)], d=0.2)
@@ -332,12 +348,14 @@ class Tin(FloatLayout):
     def siz_dwn(self, box):
         box.size_hint[1]-= 10
 
-    def show_menu(self, menu):
+    def hide_menu(self, menu):
         if self.menu:
             menu.opacity = 0
             menu.size_hint_x = .0
             self.menu = 0
-        else:
+
+    def show_menu(self, menu):
+        if not self.menu:
             menu.opacity = 1
             menu.size_hint_x = .9
             self.menu = 1
