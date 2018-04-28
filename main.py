@@ -35,7 +35,7 @@ from kivy.metrics import sp, dp
 
 
 FIRST_PAGE= 0
-LAST_PAGE= 604
+LAST_PAGE= 603
 SPEED_STEP= 1000
 INITIAL_SPEED= 10000
 INITIAL_SIZE= 500
@@ -51,6 +51,7 @@ Builder.load_string('''
         BoxLayout:
             id: box
             size_hint_y: 500
+            size_hint_x: 1
             orientation: 'vertical'
 
     Image:
@@ -267,7 +268,7 @@ class Tin(FloatLayout):
         lbl = self.ids.lbl
 
 
-        self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE-1))+1.5)
+        self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
 
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
@@ -279,24 +280,28 @@ class Tin(FloatLayout):
 
         #he next linesare for manual page's texture buffer handler
 
-        mid= int(((1-sv.scroll_y)*(LAST_PAGE-1)))
+        mid= int(((1-sv.scroll_y)*(LAST_PAGE)))
 
         beg= mid-3
         end= mid+3
         if beg < 0 : beg = 0
         if end > LAST_PAGE : end = LAST_PAGE
 
+        for i in range(0, beg+1):
+            bl.children[LAST_PAGE- i].source = 'free.jpg'
 
-        for i in range(beg, end):
+        for i in range(end, LAST_PAGE+1):
+            bl.children[LAST_PAGE- i].source = 'free.jpg'
+
+        for i in range(beg, end+1):
             strg= ('pages/page_' + str(i) + '.jpg')
-            bl.children[LAST_PAGE-1- i].source = strg
+            bl.children[LAST_PAGE- i].source = strg
 
 
-        for i in range(0, beg):
-            bl.children[LAST_PAGE-1- i].source = 'free.jpg'
+        print beg
+        print mid
+        print end
 
-        for i in range(end, LAST_PAGE):
-            bl.children[LAST_PAGE-1- i].source = 'free.jpg'
 
     #functions for buttons
 
@@ -367,7 +372,9 @@ class TinApp(App):
 
         #restore last session
         f = open("save.dat")
-        self.curt_page = f.read()
+        self.curt_page = f.readline()
+        box.size_hint[1] = int(f.readline())
+        sv.spd = int(f.readline())
         f.close()
         
         
@@ -376,22 +383,24 @@ class TinApp(App):
         
         #fill boxlayout with pages
         # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
-        for i in range(FIRST_PAGE, LAST_PAGE):
-            strg =('pages/page_' + str(i) + '.jpg')
+        for i in range(FIRST_PAGE, LAST_PAGE+1):
+            #strg =('pages/page_' + str(i) + '.jpg')
             img = Image(source= 'free.jpg')
             box.add_widget(img, len(box.children))
 
 
         sv.scroll_y = 1 - float(self.curt_page)/604
-
-        Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
-        
+        Clock.schedule_interval(main_wdg.update, 1.0 / 60.0)
         return main_wdg
 
     def on_stop(self):
         curt_page = self.wdg.curt_page
+        size = self.wdg.ids.box.size_hint[1]
+        spd = self.wdg.ids.sv.spd
         f = open("save.dat", "w")
-        f.write( str(curt_page) )  
+        f.write( str(curt_page) + '\n')  
+        f.write( str(size) + '\n')
+        f.write( str(spd) )
         # f.write(  str((1 - SCROLL_Y/1)*604)  )  
         f.close()
 
