@@ -48,11 +48,11 @@ Builder.load_string('''
 
     MyScrollView:
         id: sv
-        on_touch_down: root.hide_menu(menu)
         BoxLayout:
             id: box
             size_hint_y: 500
             orientation: 'vertical'
+            #on_touch_down: root.hide_menu(menu)
 
     Image:
         id: lbl_bg
@@ -74,13 +74,13 @@ Builder.load_string('''
     # Button:
     #     id: menu_btn
     #     size_hint: (.05, .05)
-    #     pos_hint: {'x':.4725, 'y':.95}
+    #     pos_hint: {'x':.4725, 'y':.93}
     #     on_press: root.show_menu(menu)
     Button:
         id: menu_btn_1
         size_hint: (1, .1)
-        pos_hint: {'x':.0, 'y':.93}
-        on_press: root.show_menu(menu)
+        pos_hint: {'x':.0, 'y':.95}
+        on_press: root.hide_menu(menu) if root.menu else root.show_menu(menu) 
 
 
     
@@ -108,11 +108,11 @@ Builder.load_string('''
 
 
         Label:
-            text: 'title'
+            text: 'MENU'
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.9}
+            pos_hint: {'x':.17, 'y':.87}
             font_size: 30
-            color: .0, .0, 1, 1
+            color: 1, 1, 0, 1
             
         BoxLayout:
             # position and size to the parent, menu in this case
@@ -122,7 +122,7 @@ Builder.load_string('''
             Button:
                 id: autoscroll_btn
                 text: 'autoscroll'
-                on_press: root.autoscroll(sv, box)
+                on_press: root.autoscroll(sv, box, autoscroll_btn)
 
                 
         Label:
@@ -158,7 +158,7 @@ Builder.load_string('''
                 on_press: root.siz_up(box)
 
         Label:
-            text: 'time per page'
+            text: 'seconds per page'
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.3}
             font_size: 20
@@ -191,7 +191,7 @@ Builder.load_string('''
                 id: ti
                 text: '1'
                 multiline: False
-                on_text_validate: root.goto_page
+                on_text_validate: root.goto_page(sv, box, ti)
                 # height= '32dp'
             Button:
                 id: goto_page_btn
@@ -317,10 +317,16 @@ class Tin(FloatLayout):
 
     #functions for buttons
 
-    def autoscroll(self, sv, box):
-        sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
-        print sv.spd * (LAST_PAGE - self.curt_page)
-        self.scrolling = 1
+    def autoscroll(self, sv, box, autoscroll_btn):
+        if not self.scrolling :
+            sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
+            self.scrolling = 1
+            autoscroll_btn.text = 'stop'
+        else :
+            sv.scroll_to(box.children[LAST_PAGE - self.curt_page +1], d= 0.2 )
+            self.scrolling = 0
+            autoscroll_btn
+            autoscroll_btn.text = 'autoscroll'
 
     def spd_dwn(self, sv, box):
             sv.spd = sv.spd - self.step
@@ -339,7 +345,7 @@ class Tin(FloatLayout):
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
     
     def goto_page(self, sv, box, ti):
-        sv.scroll_to(box.children[LAST_PAGE - int(ti.text)], d=0.2)
+        sv.scroll_to(box.children[LAST_PAGE - int(ti.text) +1], d=0.2)
         self.scrolling = 0
     
     def siz_up(self, box):
@@ -416,7 +422,7 @@ class TinApp(App):
         size = self.wdg.ids.box.size_hint[1]
         spd = self.wdg.ids.sv.spd
         f = open("save.dat", "w")
-        f.write( str(curt_page) + '\n')  
+        f.write( str(curt_page -1) + '\n')  
         f.write( str(size) + '\n')
         f.write( str(spd) )
         # f.write(  str((1 - SCROLL_Y/1)*604)  )  
