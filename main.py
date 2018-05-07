@@ -14,6 +14,14 @@ kivy.require("1.9.0")
 import kivy
 kivy.require("1.9.0")
 
+#necesary for utf
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+from kivy import Config
+Config.set('graphics', 'multisamples', 0)
+
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -48,8 +56,10 @@ Builder.load_string('''
 
     MyScrollView:
         id: sv
+        pos: (0,0)
         BoxLayout:
             id: box
+            size_hint_x: 1
             size_hint_y: 500
             orientation: 'vertical'
             #on_touch_down: root.hide_menu(menu)
@@ -108,7 +118,8 @@ Builder.load_string('''
 
 
         Label:
-            text: 'MENU'
+            font_name: 'arial.ttf'
+            text: u'\ufe94\ufee4\ufe8b\ufe8e\ufed8\ufedf\ufe8d' #utf code mean menus in arabic
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.87}
             font_size: 30
@@ -121,12 +132,14 @@ Builder.load_string('''
 
             Button:
                 id: autoscroll_btn
-                text: 'autoscroll'
+                font_name: 'arial.ttf'
+                text: u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #utf code means read in arabic
                 on_press: root.autoscroll(sv, box, autoscroll_btn)
 
                 
         Label:
-            text: 'size'
+            font_name: 'arial.ttf'
+            text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d\u0020\ufee1\ufea0\ufea3' #utf code means size in arabic
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.55}
             font_size: 20
@@ -138,7 +151,8 @@ Builder.load_string('''
 
             Button:
                 id: siz_dwn_btn
-                text: 'down'
+                font_name: 'arial.ttf'
+                text: u'\ufead\ufef4\ufed0\ufebc\ufe97' #utf code means size down in arabic
                 # size_hint: (.15, .05)
                 # pos_hint: {'x':.2, 'y':.8}
                 on_press: root.siz_dwn(box)
@@ -152,13 +166,16 @@ Builder.load_string('''
                 
             Button:
                 id: siz_up_btn
-                text: 'up'
+                font_name: 'arial.ttf'
+                text: u'\ufead\ufef4\ufe92\ufedc\ufe97' #utf code means size up in arabic
                 #size_hint: (.15, .05)
                 #pos_hint: {'x':.8, 'y':.8}
                 on_press: root.siz_up(box)
 
         Label:
-            text: 'seconds per page'
+            font_name: 'arial.ttf'
+            text: u'\ufe94\ufea4\ufed4\ufebb\u0020\ufedd\ufedc\ufedf\ufef2\ufee7\
+\ufe8d\ufeed\ufe9c\ufedf\ufe8d\u0020\ufea9\ufea9\ufecb' #utf code means second per page in arabic
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.3}
             font_size: 20
@@ -195,7 +212,8 @@ Builder.load_string('''
                 # height= '32dp'
             Button:
                 id: goto_page_btn
-                text: 'goto'
+                font_name: 'arial.ttf'
+                text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d' #utf code means page in arabic
                 on_press: root.goto_page(sv, box, ti)
 
     ''')
@@ -312,6 +330,7 @@ class Tin(FloatLayout):
         for i in range(beg, end+1):
             strg= ('pages/page_' + str(i) + '.jpg')
             bl.children[LAST_PAGE- i].source = strg
+            bl.children[LAST_PAGE- i].size_hint_x = 1
 
 
 
@@ -321,12 +340,13 @@ class Tin(FloatLayout):
         if not self.scrolling :
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
             self.scrolling = 1
-            autoscroll_btn.text = 'stop'
+            autoscroll_btn.text = u'\ufed1\ufed7\ufeed\ufe98\ufedf\ufe8d' #stop in arabic
+
         else :
             sv.scroll_to(box.children[LAST_PAGE - self.curt_page +1], d= 0.2 )
             self.scrolling = 0
             autoscroll_btn
-            autoscroll_btn.text = 'autoscroll'
+            autoscroll_btn.text = u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #read in arabic
 
     def spd_dwn(self, sv, box):
             sv.spd = sv.spd - self.step
@@ -349,10 +369,10 @@ class Tin(FloatLayout):
         self.scrolling = 0
     
     def siz_up(self, box):
-        box.size_hint[1]+= 10
+        box.size_hint[1]+= 20
     
     def siz_dwn(self, box):
-        box.size_hint[1]-= 10
+        box.size_hint[1]-= 20
 
     def hide_menu(self, menu):
         if self.menu:
@@ -375,11 +395,12 @@ class TinApp(App):
     def build(self):
         #str(int(5000)        
         #Window.clearcolor = (.95,.95,.95,1)
-        #Window.size = (1024, 768)
-        #Window.set_title('TinApp')
-        self.title = 'Tin'
+        #Window.size = (700, 1400)
+        Window.set_title('Quran Tin')
+        self.title = 'Quran Tin'
         self.icon = 'tin.png'
-        self.wdg = Tin(size=(400, 400))
+        self.presplash = Image(source= 'tin.png', allow_stretch= False)
+        self.wdg = Tin(size= Window.size)
         main_wdg = self.wdg
 
         #finaly found the way for calling object from kv file
@@ -409,7 +430,8 @@ class TinApp(App):
         # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
         for i in range(FIRST_PAGE, LAST_PAGE+1):
             #strg =('pages/page_' + str(i) + '.jpg')
-            img = Image(source= 'free.jpg')
+            img = Image(source= 'free.jpg', allow_stretch= True)
+            img.size_hint[0] = 1 
             box.add_widget(img, len(box.children))
 
 
