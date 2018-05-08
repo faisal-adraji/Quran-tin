@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = My Application
+title = Quran Tin
 
 # (str) Package name
 package.name = myapp
@@ -13,7 +13,7 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,dat, pages/jpg
+source.include_exts = py,png,jpg,kv,atlas,dat,ttf,pages/jpg
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -46,7 +46,7 @@ requirements = kivy
 #garden_requirements =
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = %(source.dir)s/tin_splash.png
 
 # (str) Icon of the application
 icon.filename = %(source.dir)s/tin.png
@@ -75,7 +75,7 @@ osx.kivy_version = 1.9.1
 #
 
 # (bool) Indicate if the application should be fullscreen or not
-fullscreen = 0
+fullscreen = 1
 
 # (string) Presplash background color (for new android toolchain)
 # Supported formats are: #RRGGBB #AARRGGBB or one of the following names:
@@ -170,7 +170,7 @@ fullscreen = 0
 #android.wakelock = False
 
 # (list) Android application meta-data to set (key=value format)
-#android.meta_data =
+#android.meta_data = presplash-fit=[fit|width|height]
 
 # (list) Android library project to add (will be added in the
 # project.properties automatically.)

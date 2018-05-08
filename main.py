@@ -87,7 +87,7 @@ Builder.load_string('''
     #     pos_hint: {'x':.4725, 'y':.93}
     #     on_press: root.show_menu(menu)
     Button:
-        id: menu_btn_1
+        id: menu_btn
         size_hint: (1, .1)
         pos_hint: {'x':.0, 'y':.95}
         on_press: root.hide_menu(menu) if root.menu else root.show_menu(menu) 
@@ -118,11 +118,12 @@ Builder.load_string('''
 
 
         Label:
+            id: title
             font_name: 'arial.ttf'
-            text: u'\ufe94\ufee4\ufe8b\ufe8e\ufed8\ufedf\ufe8d' #utf code mean menus in arabic
-            size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.87}
-            font_size: 30
+            text: u'\ufe94\ufee4\ufe8b\ufe8e\ufed8\ufedf\ufe8d' #utf code mean menu in arabic
+            size_hint: (.66, .2)
+            pos_hint: {'x':.17, 'y':.8}
+            #font_size: 30
             color: 1, 1, 0, 1
             
         BoxLayout:
@@ -140,9 +141,9 @@ Builder.load_string('''
         Label:
             font_name: 'arial.ttf'
             text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d\u0020\ufee1\ufea0\ufea3' #utf code means size in arabic
-            size_hint: (.66, .1)
+            size_hint: (.66, .2)
             pos_hint: {'x':.17, 'y':.55}
-            font_size: 20
+            #font_size: 20
 
         BoxLayout:
             # position and size to the parent, menu in this case
@@ -176,9 +177,9 @@ Builder.load_string('''
             font_name: 'arial.ttf'
             text: u'\ufe94\ufea4\ufed4\ufebb\u0020\ufedd\ufedc\ufedf\ufef2\ufee7\
 \ufe8d\ufeed\ufe9c\ufedf\ufe8d\u0020\ufea9\ufea9\ufecb' #utf code means second per page in arabic
-            size_hint: (.66, .1)
+            size_hint: (.66, .2)
             pos_hint: {'x':.17, 'y':.3}
-            font_size: 20
+            #font_size: 20
 
         BoxLayout:
             # position and size to the parent, menu in this case
@@ -399,7 +400,7 @@ class TinApp(App):
         Window.set_title('Quran Tin')
         self.title = 'Quran Tin'
         self.icon = 'tin.png'
-        self.presplash = Image(source= 'tin.png', allow_stretch= False)
+        self.presplash = Image(source= 'tin_splash.png', allow_stretch= False)
         self.wdg = Tin(size= Window.size)
         main_wdg = self.wdg
 
