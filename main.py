@@ -22,6 +22,15 @@ sys.setdefaultencoding('utf-8')
 from kivy import Config
 Config.set('graphics', 'multisamples', 0)
 
+# from jnius import autoclass
+
+# # all this to prevent device sleep
+# activity = autoclass('org.renpy.android.PythonActivity')
+# # PythonActivity = autoclass('org.renpy.android.PythonActivity')
+# v = autoclass('android.view.View')
+# params = autoclass('android.view.WindowManager$LayoutParams')
+# from android.runnable import run_on_ui_thread
+
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -287,6 +296,7 @@ class Tin(FloatLayout):
     scrolling = 0
     menu = 1
     step = 1
+    mem = 0
     global curt_page
     
     #ti = ObjectProperty(None)
@@ -317,31 +327,35 @@ class Tin(FloatLayout):
 
         mid= int(((1-sv.scroll_y)*(LAST_PAGE)))
 
-        beg= mid-3
-        end= mid+3
+        beg= mid-1
+        end= mid+2
         if beg < 0 : beg = 0
         if end > LAST_PAGE : end = LAST_PAGE
 
-        for i in range(0, beg+1):
-            bl.children[LAST_PAGE- i].source = 'free.jpg'
+        # for i in range(0, beg+1):
+        #     bl.children[LAST_PAGE- i].source = 'free.jpg'
 
-        for i in range(end, LAST_PAGE+1):
-            bl.children[LAST_PAGE- i].source = 'free.jpg'
+        # for i in range(end, LAST_PAGE+1):
+        #     bl.children[LAST_PAGE- i].source = 'free.jpg'
 
-        for i in range(beg, end+1):
-            strg= ('pages/page_' + str(i) + '.jpg')
-            bl.children[LAST_PAGE- i].source = strg
-            bl.children[LAST_PAGE- i].size_hint_x = 1
+        if self.mem != self.curt_page:
+            for i in range(beg, end+1):
+                strg= ('pages/page_' + str(i) + '.jpg')
+                bl.children[LAST_PAGE- i].source = strg
+                bl.children[LAST_PAGE- i].size_hint_x = 1
+                self.mem = self.curt_page
 
 
 
     #functions for buttons
 
+    #@run_on_ui_thread
     def autoscroll(self, sv, box, autoscroll_btn):
         if not self.scrolling :
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
             self.scrolling = 1
             autoscroll_btn.text = u'\ufed1\ufed7\ufeed\ufe98\ufedf\ufe8d' #stop in arabic
+            # activity.mActivity.getWindow().addFlags(params.FLAG_KEEP_SCREEN_ON)
 
         else :
             sv.scroll_to(box.children[LAST_PAGE - self.curt_page +1], d= 0.2 )
@@ -394,13 +408,18 @@ class TinApp(App):
 
 
     def build(self):
+
+        # @run_on_ui_thread
+        # def android_setflag(self):
+        #     PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
+
         #str(int(5000)        
         #Window.clearcolor = (.95,.95,.95,1)
         #Window.size = (700, 1400)
         Window.set_title('Quran Tin')
         self.title = 'Quran Tin'
         self.icon = 'tin.png'
-        self.presplash = Image(source= 'tin_splash.png', allow_stretch= False)
+        #self.presplash = Image(source= 'tin_splash.png', allow_stretch= False)
         self.wdg = Tin(size= Window.size)
         main_wdg = self.wdg
 
@@ -431,8 +450,7 @@ class TinApp(App):
         # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
         for i in range(FIRST_PAGE, LAST_PAGE+1):
             #strg =('pages/page_' + str(i) + '.jpg')
-            img = Image(source= 'free.jpg', allow_stretch= True)
-            img.size_hint[0] = 1 
+            img = Image(allow_stretch= True)
             box.add_widget(img, len(box.children))
 
 
