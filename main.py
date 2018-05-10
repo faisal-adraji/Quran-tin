@@ -71,7 +71,7 @@ Builder.load_string('''
             size_hint_x: 1
             size_hint_y: 500
             orientation: 'vertical'
-            #on_touch_down: root.hide_menu(menu)
+            #on_touch_down: root.hide_kb()
 
     Image:
         id: lbl_bg
@@ -94,12 +94,12 @@ Builder.load_string('''
     #     id: menu_btn
     #     size_hint: (.05, .05)
     #     pos_hint: {'x':.4725, 'y':.93}
-    #     on_press: root.show_menu(menu)
+    #     on_press: root.show_menu()
     Button:
         id: menu_btn
         size_hint: (1, .1)
         pos_hint: {'x':.0, 'y':.95}
-        on_press: root.hide_menu(menu) if root.menu else root.show_menu(menu) 
+        on_press: root.hide_menu() if root.ismenu else root.show_menu() 
 
 
     
@@ -112,10 +112,10 @@ Builder.load_string('''
         id: menu
         text: 'menu'
         # position and size to the parent, root in this case
-        size_hint: (.90, .40)
+        size_hint: (.90, .50)
         pos_hint: {'x':.05, 'y':.05}
         orientation: 'vertical'
-        opacity: 1 if root.menu else 0
+        opacity: 1 if root.ismenu else 0
 
         Image:
             id: menu_bg
@@ -214,17 +214,63 @@ Builder.load_string('''
             pos_hint: {'x':.17, 'y':.05}
             #orientation: 'vertical'
 
-            TextInput:
-                id: ti
-                text: '1'
-                multiline: False
-                on_text_validate: root.goto_page(sv, box, ti)
-                # height= '32dp'
             Button:
-                id: goto_page_btn
+                id: open_kb
                 font_name: 'arial.ttf'
                 text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d' #utf code means page in arabic
-                on_press: root.goto_page(sv, box, ti)
+                on_press: root.hide_kb() if root.iskb else root.show_kb()
+
+
+#keyboard
+
+
+    GridLayout:
+        id: kb
+        size_hint: (.6, .40)
+        pos_hint: {'x':.2, 'y':.55}
+        rows: 4
+        col: 2
+
+        Button:
+            text: '1'
+            on_press: root.enter_number(page_val, 1)
+        Button:
+            text: '2'
+            on_press: root.enter_number(page_val, 2)
+        Button:
+            text: '3'
+            on_press: root.enter_number(page_val, 3)
+
+        Button:
+            text: '4'
+            on_press: root.enter_number(page_val, 4)
+        Button:
+            text: '5'
+            on_press: root.enter_number(page_val, 5)
+        Button:
+            text: '6'
+            on_press: root.enter_number(page_val, 6)
+
+        Button:
+            text: '7'
+            on_press: root.enter_number(page_val, 7)
+        Button:
+            text: '8'
+            on_press: root.enter_number(page_val, 8)
+        Button:
+            text: '9'
+            on_press: root.enter_number(page_val, 9)
+        Button:
+            text: '<-'
+            on_press: page_val.text = ''
+            # on_press: page_val.text = page_val.text[:-1]
+        MyLabel:
+            id: page_val
+            text: ''
+        Button:
+            id: goto_page_btn
+            text: 'dahab'
+            on_press: root.goto_page(sv, box, page_val)
 
     ''')
 
@@ -294,7 +340,9 @@ class Tin(FloatLayout):
 
 
     scrolling = 0
-    menu = 1
+    ismenu = 1
+    iskb = 1
+    isfirsttime = 1
     step = 1
     mem = 0
     global curt_page
@@ -304,13 +352,16 @@ class Tin(FloatLayout):
     def __init__(self, **kwargs):
         super(Tin, self).__init__(**kwargs)
         
-
     def update(self, dt):
         bl = self.ids.box
         sv = self.ids.sv
         lbl_spd = self.ids.lbl_scrl_spd
         lbl_siz = self.ids.lbl_viw_siz
         lbl = self.ids.lbl
+
+        if self.isfirsttime:
+            self.hide_kb()
+            self.isfirsttime = 0
 
 
         self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
@@ -379,8 +430,11 @@ class Tin(FloatLayout):
         if self.scrolling:
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
     
-    def goto_page(self, sv, box, ti):
-        sv.scroll_to(box.children[LAST_PAGE - int(ti.text) +1], d=0.2)
+    def goto_page(self, sv, box, page_val):
+        self.hide_kb()
+        if page_val.text == '':
+            page_val.text = '1'
+        sv.scroll_to(box.children[LAST_PAGE - int(page_val.text) +1], d= 0)
         self.scrolling = 0
     
     def siz_up(self, box):
@@ -389,17 +443,37 @@ class Tin(FloatLayout):
     def siz_dwn(self, box):
         box.size_hint[1]-= 20
 
-    def hide_menu(self, menu):
-        if self.menu:
-            menu.opacity = 0
-            menu.size_hint_x = .0
-            self.menu = 0
+    def hide_menu(self):
+        if self.ismenu:
+            self.ids.menu.opacity = 0
+            self.ids.menu.size_hint_x = .0
+            self.ismenu = 0
 
-    def show_menu(self, menu):
-        if not self.menu:
-            menu.opacity = 1
-            menu.size_hint_x = .9
-            self.menu = 1
+    def show_menu(self):
+        if not self.ismenu:
+            self.ids.menu.opacity = 1
+            self.ids.menu.size_hint_x = .9
+            self.ismenu = 1    
+
+    def hide_kb(self):
+        if self.iskb:
+            self.ids.kb.opacity = 0
+            self.ids.kb.size_hint_x = .0
+            self.iskb = 0
+
+    def show_kb(self):
+        if not self.iskb:
+            self.ids.kb.opacity = 1
+            self.ids.kb.size_hint_x = .6
+            self.iskb = 1
+
+    def enter_number(self, page_val, number):
+        page_val.text += (str)(number)
+        if (int)(page_val.text) > 604:
+            page_val.text = '604'
+
+
+
 
 class TinApp(App):
 
@@ -426,14 +500,11 @@ class TinApp(App):
         #finaly found the way for calling object from kv file
         sv  = main_wdg.ids.sv
         box = main_wdg.ids.box
-        ti  = main_wdg.ids.ti
-         
+
+
         lbl = main_wdg.ids.lbl    
         lbl_scrl_spd = main_wdg.ids.lbl_scrl_spd
         lbl_viw_siz = main_wdg.ids.lbl_viw_siz
-
-
-
 
         #restore last session
         f = open("save.dat")
