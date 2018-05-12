@@ -38,6 +38,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.progressbar import ProgressBar
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -95,9 +96,15 @@ Builder.load_string('''
     #     size_hint: (.05, .05)
     #     pos_hint: {'x':.4725, 'y':.93}
     #     on_press: root.show_menu()
+    ProgressBar:
+        id: pb
+        size_hint: (1, .1)
+        pos_hint: {'x':.0, 'y':.9}
+        height: '64dp'
+        value: 0
     Button:
         id: menu_btn
-        size_hint: (1, .1)
+        size_hint: (1, .053)
         pos_hint: {'x':.0, 'y':.95}
         on_press: root.hide_menu() if root.ismenu else root.show_menu() 
 
@@ -275,6 +282,7 @@ Builder.load_string('''
     ''')
 
 
+
 class MyScrollView(ScrollView):
     spd = 10000
     def scroll_to(self, widget, padding=10, animate=True, d=200):
@@ -366,11 +374,13 @@ class Tin(FloatLayout):
 
         self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
 
+        self.updt_pb()
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
         #LAST_PAGE-1 
         #+1.5 is for updating page number at the midle of page 
         lbl.text = str(self.curt_page)
+        self.ids.menu_btn.text = str(self.tell_hizb()) + ': hizb'
         lbl_spd.text = str(sv.spd)
         lbl_siz.text = str(bl.size_hint[1])
 
@@ -472,8 +482,27 @@ class Tin(FloatLayout):
         if (int)(page_val.text) > 604:
             page_val.text = '604'
 
-
-
+    def tell_hizb(self):
+        x = (self.curt_page-2)/10 +1
+        if x > 60:
+            return 60
+        if x < 1:
+            return 1
+        return x
+    def updt_pb(self):
+        if self.curt_page > 601:
+            self.ids.pb.value = 100
+            return
+        if self.curt_page < 3:
+            self.ids.pb.value = 0
+            return
+        x = (self.curt_page-2)/10 +1
+        #first failed method
+        # self.ids.pb.value = ((self.curt_page-2)%10)*10
+        #second failed methode
+        # self.ids.pb.value = (1 - self.ids.sv.scroll_y * 60 * 100)%100
+        #correct method -for now !-
+        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-604.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
 
 class TinApp(App):
 
