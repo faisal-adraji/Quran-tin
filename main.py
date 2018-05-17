@@ -19,8 +19,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-from kivy import Config
-Config.set('graphics', 'multisamples', 0)
+# from kivy import Config
+# Config.set('graphics', 'multisamples', 0)
 
 # from jnius import autoclass
 
@@ -64,7 +64,7 @@ from kivy.lang import Builder
 Builder.load_string('''
 <Tin>:
 
-    MyScrollView:
+    TinScrollView:
         id: sv
         pos: (0,0)
         BoxLayout:
@@ -73,6 +73,10 @@ Builder.load_string('''
             size_hint_y: 500
             orientation: 'vertical'
             #on_touch_down: root.hide_kb()
+
+
+
+#page bar
 
     Image:
         id: lbl_bg
@@ -91,22 +95,31 @@ Builder.load_string('''
         #pos: (200,0)
 
 
+#head button with progress bar inside him
+
+
     # Button:
     #     id: menu_btn
     #     size_hint: (.05, .05)
     #     pos_hint: {'x':.4725, 'y':.93}
     #     on_press: root.show_menu()
-    ProgressBar:
-        id: pb
-        size_hint: (1, .1)
-        pos_hint: {'x':.0, 'y':.9}
-        height: '64dp'
-        value: 0
     Button:
         id: menu_btn
-        size_hint: (1, .053)
-        pos_hint: {'x':.0, 'y':.95}
+        size_hint: (1, .1)
+        pos_hint: {'x':.0, 'y':.93}
         on_press: root.hide_menu() if root.ismenu else root.show_menu() 
+    ProgressBar:
+        id: pb
+        size_hint: (1, .04)
+        pos_hint: {'x':.0, 'y':.93}
+        height: '92dp'
+        value: 0
+    Label:
+        id: lbl_hizb_bar
+        font_name: 'arial.ttf'
+        text: u'\ufe8f\ufeaf\ufea3'
+        size_hint: (.8 , .1)
+        pos_hint: {'x':.2, 'y':.935}
 
 
     
@@ -132,6 +145,18 @@ Builder.load_string('''
             color: .2, .2, .2, 1
             allow_stretch: True
 
+        Button:
+            id: close_menu
+            text: 'X'
+            size_hint: (.1, .1)
+            pos_hint: {'x':.9, 'y':.9}
+            on_press: root.hide_menu()
+        Button:
+            id: show_help
+            text: '?'
+            size_hint: (.1, .1)
+            pos_hint: {'x':0, 'y':.9}
+            on_press: root.show_lgd()
 
         Label:
             id: title
@@ -174,7 +199,7 @@ Builder.load_string('''
                 # pos_hint: {'x':.2, 'y':.8}
                 on_press: root.siz_dwn(box)
 
-            MyLabel:
+            TinLabel:
                 id: lbl_viw_siz
                 text: 'void'
                 markup: True
@@ -198,7 +223,6 @@ Builder.load_string('''
             #font_size: 20
 
         BoxLayout:
-            # position and size to the parent, menu in this case
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.2}
 
@@ -206,9 +230,9 @@ Builder.load_string('''
                 id: spd_dwn_btn
                 text: '-'
                 on_press: root.spd_dwn(sv, box)
-            MyLabel:
+            TinLabel:
                 id: lbl_scrl_spd
-                text: 'void'
+                text: ''
                 markup: True
             Button:
                 id: spd_up_btn
@@ -224,7 +248,7 @@ Builder.load_string('''
             Button:
                 id: open_kb
                 font_name: 'arial.ttf'
-                text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d' #utf code means page in arabic
+                text: u'\ufe94\ufea4\ufed4\ufebb\u0020\ufead\ufe8e\ufef4\ufe98\ufea7\ufe8d' #utf code means page in arabic
                 on_press: root.hide_kb() if root.iskb else root.show_kb()
 
 
@@ -233,57 +257,92 @@ Builder.load_string('''
 
     GridLayout:
         id: kb
-        size_hint: (.6, .40)
-        pos_hint: {'x':.2, 'y':.55}
-        rows: 4
-        col: 2
+        size_hint: (.6, .50)
+        pos_hint: {'x':.2, 'y':.45}
+        rows: 6
+
 
         Button:
-            text: '1'
+            text: u'1'
             on_press: root.enter_number(page_val, 1)
         Button:
-            text: '2'
+            text: u'2'
             on_press: root.enter_number(page_val, 2)
         Button:
-            text: '3'
+            text: u'3'
             on_press: root.enter_number(page_val, 3)
 
         Button:
-            text: '4'
+            text: u'4'
             on_press: root.enter_number(page_val, 4)
         Button:
-            text: '5'
+            text: u'5'
             on_press: root.enter_number(page_val, 5)
         Button:
-            text: '6'
+            text: u'6'
             on_press: root.enter_number(page_val, 6)
 
         Button:
-            text: '7'
+            text: u'7'
             on_press: root.enter_number(page_val, 7)
         Button:
-            text: '8'
+            text: u'8'
             on_press: root.enter_number(page_val, 8)
         Button:
-            text: '9'
+            text: u'9'
             on_press: root.enter_number(page_val, 9)
         Button:
-            text: '<-'
+            text: u'<-'
             on_press: page_val.text = ''
             # on_press: page_val.text = page_val.text[:-1]
-        MyLabel:
-            id: page_val
-            text: ''
+        Button:
+            text: u'0'
+            on_press: root.enter_number(page_val, 0)
         Button:
             id: goto_page_btn
-            text: 'dahab'
+            font_name: 'arial.ttf'
+            text: u'\ufee1\ufe97'
             on_press: root.goto_page(sv, box, page_val)
+        TinLabel:
+            opacity: 0
+        TinLabel:
+            id: page_val
+            size_hint: (1, .1)
+            text: ''
+        TinLabel:
+            opacity:0
+
+
+
+#legend image
+
+    FloatLayout:
+        id: lgd
+        color: 1, 1, 1, 1
+        size_hint: (1., 1.)
+        pos_hint: {'x': .0, 'y': .0}
+        orientation: 'vertical'
+        on_touch_down: root.hide_lgd()
+
+        Image:
+            size: lgd.size
+            pos: lgd.pos
+            #source: 'free.png'
+            color: .0, .0, .0, 1
+            allow_stretch: True
+        Image:
+            size: lgd.size
+            pos: lgd.pos
+            source: 'legend.png'
+            allow_stretch: True
+
+
 
     ''')
 
 
 
-class MyScrollView(ScrollView):
+class TinScrollView(ScrollView):
     spd = 10000
     def scroll_to(self, widget, padding=10, animate=True, d=200):
 
@@ -332,7 +391,7 @@ class MyScrollView(ScrollView):
 
 
 
-class MyLabel(Label):
+class TinLabel(Label):
     def on_size(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
@@ -350,6 +409,7 @@ class Tin(FloatLayout):
     scrolling = 0
     ismenu = 1
     iskb = 1
+    islgd = 1
     isfirsttime = 1
     step = 1
     mem = 0
@@ -369,6 +429,7 @@ class Tin(FloatLayout):
 
         if self.isfirsttime:
             self.hide_kb()
+            self.hide_lgd()
             self.isfirsttime = 0
 
 
@@ -380,7 +441,7 @@ class Tin(FloatLayout):
         #LAST_PAGE-1 
         #+1.5 is for updating page number at the midle of page 
         lbl.text = str(self.curt_page)
-        self.ids.menu_btn.text = str(self.tell_hizb()) + ': hizb'
+        self.ids.menu_btn.text = str(self.tell_hizb())
         lbl_spd.text = str(sv.spd)
         lbl_siz.text = str(bl.size_hint[1])
 
@@ -392,6 +453,8 @@ class Tin(FloatLayout):
         end= mid+2
         if beg < 0 : beg = 0
         if end > LAST_PAGE : end = LAST_PAGE
+
+
 
         # for i in range(0, beg+1):
         #     bl.children[LAST_PAGE- i].source = 'free.jpg'
@@ -443,7 +506,7 @@ class Tin(FloatLayout):
     def goto_page(self, sv, box, page_val):
         self.hide_kb()
         if page_val.text == '':
-            page_val.text = '1'
+            return
         sv.scroll_to(box.children[LAST_PAGE - int(page_val.text) +1], d= 0)
         self.scrolling = 0
     
@@ -453,23 +516,19 @@ class Tin(FloatLayout):
     def siz_dwn(self, box):
         box.size_hint[1]-= 20
 
-    def hide_menu(self):
-        if self.ismenu:
-            self.ids.menu.opacity = 0
-            self.ids.menu.size_hint_x = .0
-            self.ismenu = 0
 
     def show_menu(self):
         if not self.ismenu:
             self.ids.menu.opacity = 1
             self.ids.menu.size_hint_x = .9
             self.ismenu = 1    
-
-    def hide_kb(self):
-        if self.iskb:
-            self.ids.kb.opacity = 0
-            self.ids.kb.size_hint_x = .0
-            self.iskb = 0
+            
+    def hide_menu(self):
+        if self.ismenu:
+            self.ids.menu.opacity = 0
+            self.ids.menu.size_hint_x = .0
+            self.ismenu = 0
+        self.hide_kb()
 
     def show_kb(self):
         if not self.iskb:
@@ -477,10 +536,42 @@ class Tin(FloatLayout):
             self.ids.kb.size_hint_x = .6
             self.iskb = 1
 
+    def hide_kb(self):
+        if self.iskb:
+            self.ids.kb.opacity = 0
+            self.ids.kb.size_hint_x = .0
+            self.iskb = 0
+
+    def show_lgd(self):
+        if not self.islgd:
+            self.ids.lgd.opacity = 1
+            self.ids.lgd.size_hint_x = 1
+            self.ids.lgd.size_hint_y = 1
+            self.islgd = 1
+
+    def hide_lgd(self):
+        if self.islgd:
+            self.ids.lgd.opacity = 0
+            self.ids.lgd.size_hint_x = 0
+            self.ids.lgd.size_hint_y = 0
+            self.islgd = 0
+
+    # image = Image(source='legend.png')
+    
+    # popup = Popup(title='alwan legend',
+    #                 size_hint=(0.98, 0.98),
+    #                 content=image)
+
+    # image.bind(on_touch_down=popup.dismiss)
+
+    # popup.open()
+
     def enter_number(self, page_val, number):
         page_val.text += (str)(number)
         if (int)(page_val.text) > 604:
-            page_val.text = '604'
+            page_val.text = u'604'
+        if page_val.text == '0':
+            page_val.text = u''
 
     def tell_hizb(self):
         x = (self.curt_page-2)/10 +1
@@ -489,6 +580,7 @@ class Tin(FloatLayout):
         if x < 1:
             return 1
         return x
+
     def updt_pb(self):
         if self.curt_page > 601:
             self.ids.pb.value = 100
@@ -502,7 +594,7 @@ class Tin(FloatLayout):
         #second failed methode
         # self.ids.pb.value = (1 - self.ids.sv.scroll_y * 60 * 100)%100
         #correct method -for now !-
-        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-604.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
+        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60.4
 
 class TinApp(App):
 
