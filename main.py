@@ -594,7 +594,7 @@ class Tin(FloatLayout):
         #second failed methode
         # self.ids.pb.value = (1 - self.ids.sv.scroll_y * 60 * 100)%100
         #correct method -for now !-
-        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60.4
+        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
 
 class TinApp(App):
 
