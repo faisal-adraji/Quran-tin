@@ -627,13 +627,17 @@ class TinApp(App):
         lbl_scrl_spd = main_wdg.ids.lbl_scrl_spd
         lbl_viw_siz = main_wdg.ids.lbl_viw_siz
 
-        #restore last session
-        f = open("save.dat")
-        self.curt_page = f.readline()
-        box.size_hint[1] = int(f.readline())
-        sv.spd = int(f.readline())
-        f.close()
-        
+        #restore last session7
+        try:
+            f = open("save.dat")
+            self.curt_page = f.readline()
+            box.size_hint[1] = int(f.readline())
+            sv.spd = int(f.readline())
+            f.close()
+        except:
+            self.curt_page = 0
+            box.size_hint[1] = 500
+            sv.spd = 80
         
         
     # initializing graphic objects
