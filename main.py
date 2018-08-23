@@ -45,9 +45,11 @@ from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 
-from kivy.animation import Animation
+from kivy.animation import Animation, AnimationTransition
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import sp, dp
+from kivy.compat import string_types
+
 
 # from tinsv import MyScrollView
 
@@ -57,6 +59,7 @@ LAST_PAGE= 603
 SPEED_STEP= 1000
 INITIAL_SPEED= 10000
 INITIAL_SIZE= 500
+ANIM_STEP= 1/10.0
 
 
 from kivy.lang import Builder
@@ -340,6 +343,20 @@ Builder.load_string('''
 
     ''')
 
+class TinAnimation(Animation):
+ def __init__(self, **kw):
+        super(TinAnimation, self).__init__()
+        # Initialize
+        self._clock_installed = False
+        self._duration = kw.pop('d', kw.pop('duration', 1.))
+        self._transition = kw.pop('t', kw.pop('transition', 'linear'))
+        self._step = kw.pop('s', kw.pop('step', ANIM_STEP))
+        if isinstance(self._transition, string_types):
+            self._transition = getattr(AnimationTransition, self._transition)
+        self._animated_properties = kw
+        self._widgets = {}
+
+
 
 
 class TinScrollView(ScrollView):
@@ -382,8 +399,8 @@ class TinScrollView(ScrollView):
         if animate:
             if animate is True:
                 animate = {'d': d, 't': 'linear'} #0.2
-            Animation.stop_all(self, 'scroll_x', 'scroll_y')
-            Animation(scroll_x=sxp, scroll_y=syp, **animate).start(self)
+            TinAnimation.stop_all(self, 'scroll_x', 'scroll_y')
+            TinAnimation(scroll_x=sxp, scroll_y=syp, **animate).start(self)
         else:
             self.scroll_x = sxp
             self.scroll_y = syp
@@ -651,7 +668,7 @@ class TinApp(App):
 
 
         sv.scroll_y = 1 - float(self.curt_page)/604
-        Clock.schedule_interval(main_wdg.update, 1.0 / 60.0)
+        Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
         return main_wdg
 
     def on_stop(self):
