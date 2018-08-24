@@ -100,6 +100,13 @@ Builder.load_string('''
         # size_hint: (.2, .06)
         #pos: (200,0)
 
+    Button:
+        id: rev_btn
+        text: '<='
+        size_hint: (.1, .05)
+        pos_hint: {'x':.0, 'y':.0}
+        on_press: root.reverse(sv, box)
+
 
 #head button with progress bar inside him
 
@@ -691,6 +698,11 @@ class Tin(FloatLayout):
             self.ids.lgd.size_hint_x = 0
             self.ids.lgd.size_hint_y = 0
             self.islgd = 0
+    def reverse(self,sv,box):
+        sv.stop()
+        sv.scroll_y += 0.0002
+        sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
+
 
     # image = Image(source='legend.png')
     
