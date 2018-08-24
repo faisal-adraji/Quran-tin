@@ -365,6 +365,8 @@ class TinAnimation(Animation):
 
 class TinScrollView(ScrollView):
     spd = 10000
+    def stop(self):
+        TinAnimation.stop_all(self, 'scroll_x', 'scroll_y')
     def scroll_to(self, widget, padding=10, animate=True, d=200):
 
         if not self.parent:
@@ -609,7 +611,7 @@ class Tin(FloatLayout):
             # activity.mActivity.getWindow().addFlags(params.FLAG_KEEP_SCREEN_ON)
 
         else :
-            sv.scroll_to(box.children[LAST_PAGE - self.curt_page +1], d= 0.2 )
+            sv.stop()
             self.scrolling = 0
             autoscroll_btn
             autoscroll_btn.text = u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #read in arabic
