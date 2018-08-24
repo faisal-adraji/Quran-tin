@@ -63,6 +63,7 @@ INITIAL_SPEED= 10000
 INITIAL_SIZE= 500
 ANIM_STEP= 1/10.0
 
+scrolling = 0
 
 from kivy.lang import Builder
 
@@ -487,6 +488,10 @@ class TinScrollView(ScrollView):
         self._touch = touch
         uid = self._get_uid()
 
+        #block touch scroll when auto-scrolling
+        if scrolling:
+            return
+        
         ud[uid] = {
             'mode': 'unknown',
             'dx': 0,
@@ -494,7 +499,6 @@ class TinScrollView(ScrollView):
             'user_stopped': in_bar,
             'frames': Clock.frames,
             'time': touch.time_start}
-
         if self.do_scroll_x and self.effect_x and not ud['in_bar_x']:
             self._effect_x_start_width = self.width
             self.effect_x.start(touch.x)
@@ -527,7 +531,6 @@ class TinLabel(Label):
 class Tin(FloatLayout):
 
 
-    scrolling = 0
     ismenu = 1
     iskb = 1
     islgd = 1
@@ -604,21 +607,24 @@ class Tin(FloatLayout):
 
     #@run_on_ui_thread
     def autoscroll(self, sv, box, autoscroll_btn):
-        if not self.scrolling :
+        if not scrolling :
+            sv.stop()
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
-            self.scrolling = 1
+            global scrolling
+            scrolling = 1
             autoscroll_btn.text = u'\ufed1\ufed7\ufeed\ufe98\ufedf\ufe8d' #stop in arabic
             # activity.mActivity.getWindow().addFlags(params.FLAG_KEEP_SCREEN_ON)
 
         else :
             sv.stop()
-            self.scrolling = 0
+            global scrolling
+            scrolling = 0
             autoscroll_btn
             autoscroll_btn.text = u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #read in arabic
 
     def spd_dwn(self, sv, box):
             sv.spd = sv.spd - self.step
-            if self.scrolling:
+            if scrolling:
                 sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
             # print sv.spd * (LAST_PAGE - self.curt_page)
             # print LAST_PAGE
@@ -629,7 +635,7 @@ class Tin(FloatLayout):
         
     def spd_up(self, sv, box):
         sv.spd = sv.spd + self.step
-        if self.scrolling:
+        if scrolling:
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
     
     def goto_page(self, sv, box, page_val):
@@ -637,7 +643,8 @@ class Tin(FloatLayout):
         if page_val.text == '':
             return
         sv.scroll_to(box.children[LAST_PAGE - int(page_val.text) +1], d= 0)
-        self.scrolling = 0
+        global scrolling
+        scrolling = 0
     
     def siz_up(self, box):
         box.size_hint[1]+= 20
