@@ -49,6 +49,7 @@ from kivy.animation import Animation, AnimationTransition
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import sp, dp
 from kivy.compat import string_types
+from kivy.weakproxy import WeakProxy
 
 
 # from tinsv import MyScrollView
@@ -68,6 +69,7 @@ Builder.load_string('''
 <Tin>:
 
     TinScrollView:
+        scroll_friction: 0.0
         id: sv
         pos: (0,0)
         BoxLayout:
@@ -344,7 +346,7 @@ Builder.load_string('''
     ''')
 
 class TinAnimation(Animation):
- def __init__(self, **kw):
+    def __init__(self, **kw):
         super(TinAnimation, self).__init__()
         # Initialize
         self._clock_installed = False
@@ -355,6 +357,8 @@ class TinAnimation(Animation):
             self._transition = getattr(AnimationTransition, self._transition)
         self._animated_properties = kw
         self._widgets = {}
+
+
 
 
 
@@ -404,9 +408,107 @@ class TinScrollView(ScrollView):
         else:
             self.scroll_x = sxp
             self.scroll_y = syp
+    def on_scroll_start(self, touch, check_children=True):
+        if check_children:
+            touch.push()
+            touch.apply_transform_2d(self.to_local)
+            if self.dispatch_children('on_scroll_start', touch):
+                touch.pop()
+                return True
+            touch.pop()
+
+        if not self.collide_point(*touch.pos):
+            touch.ud[self._get_uid('svavoid')] = True
+            return
+        if self.disabled:
+            return True
+        if self._touch or (not (self.do_scroll_x or self.do_scroll_y)):
+            return self.simulate_touch_down(touch)
+
+        # handle mouse scrolling, only if the viewport size is bigger than the
+        # scrollview size, and if the user allowed to do it
+        vp = self._viewport
+        if not vp:
+            return True
+        scroll_type = self.scroll_type
+        ud = touch.ud
+        scroll_bar = 'bars' in scroll_type
+
+        # check if touch is in bar_x(horizontal) or bay_y(bertical)
+        ud['in_bar_x'] = ud['in_bar_y'] = False
+        width_scrollable = vp.width > self.width
+        height_scrollable = vp.height > self.height
+        bar_pos_x = self.bar_pos_x[0]
+        bar_pos_y = self.bar_pos_y[0]
+
+        d = {'b': True if touch.y < self.y + self.bar_width else False,
+             't': True if touch.y > self.top - self.bar_width else False,
+             'l': True if touch.x < self.x + self.bar_width else False,
+             'r': True if touch.x > self.right - self.bar_width else False}
+        if scroll_bar:
+            if (width_scrollable and d[bar_pos_x]):
+                ud['in_bar_x'] = True
+            if (height_scrollable and d[bar_pos_y]):
+                ud['in_bar_y'] = True
+
+        if vp and 'button' in touch.profile and \
+                touch.button.startswith('scroll'):
+            btn = touch.button
+            m = self.scroll_wheel_distance
+            e = None
+
+            if ((btn == 'scrolldown' and self.scroll_y >= 1) or
+                (btn == 'scrollup' and self.scroll_y <= 0) or
+                (btn == 'scrollleft' and self.scroll_x >= 1) or
+                    (btn == 'scrollright' and self.scroll_x <= 0)):
+                return False
 
 
+            return True
 
+        in_bar = ud['in_bar_x'] or ud['in_bar_y']
+        if scroll_type == ['bars'] and not in_bar:
+            return self.simulate_touch_down(touch)
+
+        if in_bar:
+            if (ud['in_bar_y'] and not
+                    self._touch_in_handle(
+                        self._handle_y_pos, self._handle_y_size, touch)):
+                self.scroll_y = (touch.y - self.y) / self.height
+            elif (ud['in_bar_x'] and not
+                    self._touch_in_handle(
+                        self._handle_x_pos, self._handle_x_size, touch)):
+                self.scroll_x = (touch.x - self.x) / self.width
+
+        # no mouse scrolling, so the user is going to drag the scrollview with
+        # this touch.
+        self._touch = touch
+        uid = self._get_uid()
+
+        ud[uid] = {
+            'mode': 'unknown',
+            'dx': 0,
+            'dy': 0,
+            'user_stopped': in_bar,
+            'frames': Clock.frames,
+            'time': touch.time_start}
+
+        if self.do_scroll_x and self.effect_x and not ud['in_bar_x']:
+            self._effect_x_start_width = self.width
+            self.effect_x.start(touch.x)
+            self._scroll_x_mouse = self.scroll_x
+        if self.do_scroll_y and self.effect_y and not ud['in_bar_y']:
+            self._effect_y_start_height = self.height
+            #searched night and morning to find out
+            #how to modify scroll friction, default is 0.05
+            self.effect_y.friction = 0.04
+            self.effect_y.start(touch.y)
+            self._scroll_y_mouse = self.scroll_y
+
+        if not in_bar:
+            Clock.schedule_once(self._change_touch_mode,
+                                self.scroll_timeout / 1000.)
+        return True
 
 class TinLabel(Label):
     def on_size(self, *args):
