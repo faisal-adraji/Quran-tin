@@ -10,7 +10,7 @@ kivy.require("1.9.0")
 #import sys
 #sys.path.append("/storage/emulated/0/kivy/Tin")
 
-# import threading
+import threading
 import kivy
 kivy.require("1.9.0")
 
@@ -40,6 +40,7 @@ from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.progressbar import ProgressBar
 from kivy.uix.image import Image
+from kivy.uix.image import AsyncImage
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
@@ -69,7 +70,6 @@ Builder.load_string('''
 <Tin>:
 
     TinScrollView:
-        scroll_friction: 0.0
         id: sv
         pos: (0,0)
         BoxLayout:
@@ -501,7 +501,7 @@ class TinScrollView(ScrollView):
             self._effect_y_start_height = self.height
             #searched night and morning to find out
             #how to modify scroll friction, default is 0.05
-            self.effect_y.friction = 0.04
+            self.effect_y.friction = 0.03
             self.effect_y.start(touch.y)
             self._scroll_y_mouse = self.scroll_y
 
@@ -581,14 +581,22 @@ class Tin(FloatLayout):
         # for i in range(end, LAST_PAGE+1):
         #     bl.children[LAST_PAGE- i].source = 'free.jpg'
 
-        if self.mem != self.curt_page:
+        def refresh():
+            c=0
             for i in range(beg, end+1):
+                c+=1
                 strg= ('pages/page_' + str(i) + '.jpg')
                 bl.children[LAST_PAGE- i].source = strg
                 bl.children[LAST_PAGE- i].size_hint_x = 1
                 self.mem = self.curt_page
+                # print("in threath" + str(c))
+            
 
-
+        if self.mem != self.curt_page:
+            refresh()
+            #the second choice for asyncronous image loading
+            #is using the thread as folowing:
+            # threading.Thread(target = refresh()).start()
 
     #functions for buttons
 
@@ -765,7 +773,7 @@ class TinApp(App):
         # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
         for i in range(FIRST_PAGE, LAST_PAGE+1):
             #strg =('pages/page_' + str(i) + '.jpg')
-            img = Image(allow_stretch= True)
+            img = AsyncImage(allow_stretch= True)
             box.add_widget(img, len(box.children))
 
 
