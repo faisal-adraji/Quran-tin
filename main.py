@@ -242,7 +242,8 @@ Builder.load_string('''
             Button:
                 id: spd_dwn_btn
                 text: '-'
-                on_press: root.spd_dwn(sv, box)
+                on_touch_down: root.isspd_dwn = 1
+                on_touch_up: root.isspd_dwn = 0
             TinLabel:
                 id: lbl_scrl_spd
                 text: ''
@@ -250,7 +251,8 @@ Builder.load_string('''
             Button:
                 id: spd_up_btn
                 text: '+'
-                on_press: root.spd_up(sv, box)
+                on_touch_down: root.isspd_up = 1
+                on_touch_up: root.isspd_up = 0
 
         BoxLayout:
             # position and size to the parent, menu in this case
@@ -542,6 +544,8 @@ class Tin(FloatLayout):
     iskb = 1
     islgd = 1
     isfirsttime = 1
+    isspd_up= 0
+    isspd_dwn= 0
     step = 1
     mem = 0
     global curt_page
@@ -562,6 +566,8 @@ class Tin(FloatLayout):
             self.hide_kb()
             self.hide_lgd()
             self.isfirsttime = 0
+
+        self.check_key_rep(bl, sv)
 
 
         self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
@@ -653,6 +659,15 @@ class Tin(FloatLayout):
         global scrolling
         scrolling = 0
     
+    def check_key_rep(self, box, sv):
+        if self.isspd_up and sv.spd < 400:
+            self.spd_up(sv, box)
+
+        if self.isspd_dwn and sv.spd > 20:
+            self.spd_dwn(sv, box)
+            self.isspd_up=0 
+
+
     def siz_up(self, box):
         box.size_hint[1]+= 20
     
