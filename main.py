@@ -516,7 +516,7 @@ class TinScrollView(ScrollView):
             self._effect_y_start_height = self.height
             #searched night and morning to find out
             #how to modify scroll friction, default is 0.05
-            self.effect_y.friction = 0.03
+            self.effect_y.friction = 0.00
             self.effect_y.start(touch.y)
             self._scroll_y_mouse = self.scroll_y
 
@@ -748,7 +748,7 @@ class Tin(FloatLayout):
         if self.curt_page > 601:
             self.ids.pb.value = 100
             return
-        if self.curt_page < 3:
+        if self.curt_page < 2:
             self.ids.pb.value = 0
             return
         x = (self.curt_page-2)/10 +1
@@ -757,7 +757,23 @@ class Tin(FloatLayout):
         #second failed methode
         # self.ids.pb.value = (1 - self.ids.sv.scroll_y * 60 * 100)%100
         #correct method -for now !-
-        self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
+        #self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
+        i = 1- self.ids.sv.scroll_y
+        i *= 60
+        i -= 0.05
+        b = 1
+        a = 2
+        t = 604
+        p = t - a - b
+        self.ids.pb.value = ((i-(b/t))*t/p)
+        i = self.ids.pb.value
+        i -= x-1
+        i *= 100
+        if i > 100:
+            i %= 100
+        self.ids.pb.value = i
+        print i-(b/t)
+        print self.ids.pb.value
 
 class TinApp(App):
 

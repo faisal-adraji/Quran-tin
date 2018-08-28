@@ -37,7 +37,11 @@ mv .buildozer/android/platform/build/dists/Quran/bin/Quran-tin-0.1-debug.apk .
 
 ## version list
 
-display colors legend		v0.9*
+correct hizb barre calculation	v0.11*
+
+correct stop/read method	v0.10
+
+display colors legend		v0.9
 
 display current hizb		v0.8
 
@@ -58,10 +62,6 @@ adapt build from python to kv 	v0.1
 ## what next?
 
 imropve menu ergonomie
-
-correct stop/read method
-
-correct hizb barre calculation
 
 ## contributions are welcome
 
