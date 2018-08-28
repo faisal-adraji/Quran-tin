@@ -61,7 +61,7 @@ LAST_PAGE= 603
 SPEED_STEP= 1000
 INITIAL_SPEED= 10000
 INITIAL_SIZE= 500
-ANIM_STEP= 1/10.0
+ANIM_STEP= 1/30.0
 
 scrolling = 0
 
@@ -103,9 +103,19 @@ Builder.load_string('''
     Button:
         id: rev_btn
         text: '<='
-        size_hint: (.1, .05)
+        background_color: 1,1,1,1
+        size_hint: (.15, .05)
         pos_hint: {'x':.0, 'y':.0}
         on_press: root.reverse(sv, box)
+
+    Button:
+        id: autoscroll_btn
+        font_name: 'arial.ttf'
+        background_color: 0,2,1,1
+        text: u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #utf code means read in arabic
+        size_hint: (.15, .05)
+        pos_hint: {'x':.85, 'y':.0}
+        on_press: root.autoscroll(sv, box, autoscroll_btn)
 
 
 #head button with progress bar inside him
@@ -145,8 +155,8 @@ Builder.load_string('''
         id: menu
         text: 'menu'
         # position and size to the parent, root in this case
-        size_hint: (.90, .50)
-        pos_hint: {'x':.05, 'y':.05}
+        size_hint: (1, .70)
+        pos_hint: {'x':0, 'y':.05}
         orientation: 'vertical'
         opacity: 1 if root.ismenu else 0
 
@@ -155,19 +165,19 @@ Builder.load_string('''
             size: menu.size
             pos: menu.pos
             #source: 'free.png'
-            color: .2, .2, .2, 1
+            color: .2, .2, .2, .4
             allow_stretch: True
 
         Button:
             id: close_menu
             text: 'X'
-            size_hint: (.1, .1)
-            pos_hint: {'x':.9, 'y':.9}
+            size_hint: (.15, .1)
+            pos_hint: {'x':.85, 'y':.9}
             on_press: root.hide_menu()
         Button:
             id: show_help
             text: '?'
-            size_hint: (.1, .1)
+            size_hint: (.15, .1)
             pos_hint: {'x':0, 'y':.9}
             on_press: root.show_lgd()
 
@@ -180,29 +190,19 @@ Builder.load_string('''
             #font_size: 30
             color: 1, 1, 0, 1
             
-        BoxLayout:
-            # position and size to the parent, menu in this case
-            size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.7}
-
-            Button:
-                id: autoscroll_btn
-                font_name: 'arial.ttf'
-                text: u'\ufe93\ufe83\ufead\ufed8\ufedf\ufe8d' #utf code means read in arabic
-                on_press: root.autoscroll(sv, box, autoscroll_btn)
 
                 
         Label:
             font_name: 'arial.ttf'
             text: u'\ufe94\ufea4\ufed4\ufebc\ufedf\ufe8d\u0020\ufee1\ufea0\ufea3' #utf code means size in arabic
             size_hint: (.66, .2)
-            pos_hint: {'x':.17, 'y':.55}
+            pos_hint: {'x':.17, 'y':.65}
             #font_size: 20
 
         BoxLayout:
             # position and size to the parent, menu in this case
             size_hint: (.66, .1)
-            pos_hint: {'x':.17, 'y':.45}
+            pos_hint: {'x':.17, 'y':.55}
 
             Button:
                 id: siz_dwn_btn
@@ -242,8 +242,8 @@ Builder.load_string('''
             Button:
                 id: spd_dwn_btn
                 text: '-'
-                on_touch_down: root.isspd_dwn = 1
-                on_touch_up: root.isspd_dwn = 0
+                on_press: root.isspd_dwn = 1
+                on_release: root.isspd_dwn = 0
             TinLabel:
                 id: lbl_scrl_spd
                 text: ''
@@ -251,8 +251,8 @@ Builder.load_string('''
             Button:
                 id: spd_up_btn
                 text: '+'
-                on_touch_down: root.isspd_up = 1
-                on_touch_up: root.isspd_up = 0
+                on_press: root.isspd_up = 1
+                on_release: root.isspd_up = 0
 
         BoxLayout:
             # position and size to the parent, menu in this case
@@ -272,8 +272,8 @@ Builder.load_string('''
 
     GridLayout:
         id: kb
-        size_hint: (.6, .50)
-        pos_hint: {'x':.2, 'y':.45}
+        size_hint: (.6, .30)
+        pos_hint: {'x':.2, 'y':.55}
         rows: 6
 
 
@@ -320,7 +320,7 @@ Builder.load_string('''
             on_press: root.goto_page(sv, box, page_val)
         TinLabel:
             opacity: 0
-        TinLabel:
+        ScreenLabel:
             id: page_val
             size_hint: (1, .1)
             text: ''
@@ -420,6 +420,7 @@ class TinScrollView(ScrollView):
         else:
             self.scroll_x = sxp
             self.scroll_y = syp
+
     def on_scroll_start(self, touch, check_children=True):
         if check_children:
             touch.push()
@@ -475,6 +476,23 @@ class TinScrollView(ScrollView):
                     (btn == 'scrollright' and self.scroll_x <= 0)):
                 return False
 
+            if (self.effect_x and self.do_scroll_y and height_scrollable and
+                    btn in ('scrolldown', 'scrollup')):
+                e = self.effect_x if ud['in_bar_x'] else self.effect_y
+
+            elif (self.effect_y and self.do_scroll_x and width_scrollable and
+                    btn in ('scrollleft', 'scrollright')):
+                e = self.effect_y if ud['in_bar_y'] else self.effect_x
+
+            if e:
+                if btn in ('scrolldown', 'scrollleft'):
+                    e.value = max(e.value - m, e.min)
+                    e.velocity = 0
+                elif btn in ('scrollup', 'scrollright'):
+                    e.value = min(e.value + m, e.max)
+                    e.velocity = 0
+                touch.ud[self._get_uid('svavoid')] = True
+                e.trigger_velocity_update()
 
             return True
 
@@ -516,7 +534,7 @@ class TinScrollView(ScrollView):
             self._effect_y_start_height = self.height
             #searched night and morning to find out
             #how to modify scroll friction, default is 0.05
-            self.effect_y.friction = 0.00
+            self.effect_y.friction = 0.05
             self.effect_y.start(touch.y)
             self._scroll_y_mouse = self.scroll_y
 
@@ -530,6 +548,13 @@ class TinLabel(Label):
         self.canvas.before.clear()
         with self.canvas.before:
             Color(.5, .5, .5, 1)
+            Rectangle(pos=self.pos, size=self.size)
+
+class ScreenLabel(Label):
+    def on_size(self, *args):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(0, 0, 0, 1)
             Rectangle(pos=self.pos, size=self.size)
 
 
@@ -565,6 +590,7 @@ class Tin(FloatLayout):
         if self.isfirsttime:
             self.hide_kb()
             self.hide_lgd()
+            self.hide_menu()
             self.isfirsttime = 0
 
         self.check_key_rep(bl, sv)
@@ -620,7 +646,9 @@ class Tin(FloatLayout):
 
     #@run_on_ui_thread
     def autoscroll(self, sv, box, autoscroll_btn):
+        rev_btn = self.ids.rev_btn
         if not scrolling :
+            rev_btn.background_color = 0,1,2,1
             sv.stop()
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
             global scrolling
@@ -629,6 +657,7 @@ class Tin(FloatLayout):
             # activity.mActivity.getWindow().addFlags(params.FLAG_KEEP_SCREEN_ON)
 
         else :
+            rev_btn.background_color = 1,1,1,1
             sv.stop()
             global scrolling
             scrolling = 0
@@ -662,10 +691,9 @@ class Tin(FloatLayout):
     def check_key_rep(self, box, sv):
         if self.isspd_up and sv.spd < 400:
             self.spd_up(sv, box)
-
+        
         if self.isspd_dwn and sv.spd > 20:
             self.spd_dwn(sv, box)
-            self.isspd_up=0 
 
 
     def siz_up(self, box):
@@ -678,7 +706,7 @@ class Tin(FloatLayout):
     def show_menu(self):
         if not self.ismenu:
             self.ids.menu.opacity = 1
-            self.ids.menu.size_hint_x = .9
+            self.ids.menu.size_hint_x = 1
             self.ismenu = 1    
             
     def hide_menu(self):
@@ -714,9 +742,10 @@ class Tin(FloatLayout):
             self.ids.lgd.size_hint_y = 0
             self.islgd = 0
     def reverse(self,sv,box):
-        sv.stop()
-        sv.scroll_y += 0.0002
-        sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
+        if scrolling:
+            sv.stop()
+            sv.scroll_y += 0.0002
+            sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
 
 
     # image = Image(source='legend.png')
@@ -772,8 +801,7 @@ class Tin(FloatLayout):
         if i > 100:
             i %= 100
         self.ids.pb.value = i
-        print i-(b/t)
-        print self.ids.pb.value
+
 
 class TinApp(App):
 
@@ -830,7 +858,7 @@ class TinApp(App):
 
 
         sv.scroll_y = 1 - float(self.curt_page)/604
-        Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
+        Clock.schedule_interval(main_wdg.update, 1.0 / 60.0)
         return main_wdg
 
     def on_stop(self):
