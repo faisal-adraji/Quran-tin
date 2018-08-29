@@ -1,9 +1,13 @@
 # Quran-tin
-simple app for reading Quran with auto-scroll coded with Python and Kivy
+![tin](tin.png)
 
+simple app for reading Quran with auto-scroll coded with Python and Kivy
 
 ![demo](demo.png)
 
+## download
+
+![download](https://archive.org/download/Quran_tin/Quran-tin-1.0.apk)
 
 ## utilities used
 
@@ -33,11 +37,13 @@ init buildozer
 
 buildozer -v android debug
 
-mv .buildozer/android/platform/build/dists/Quran/bin/Quran-tin-0.1-debug.apk .
+ mv .buildozer/android/platform/build/dists/lina/bin/QuranTin-0.1-debug.apk .
 
 ## version list
 
-correct hizb barre calculation	v0.11*
+redesigned menu, easy to use	v0.12*
+
+correct hizb barre calculation	v0.11
 
 correct stop/read method	v0.10
 
@@ -61,7 +67,7 @@ adapt build from python to kv 	v0.1
 
 ## what next?
 
-imropve menu ergonomie
+nothing for now
 
 ## contributions are welcome
 
