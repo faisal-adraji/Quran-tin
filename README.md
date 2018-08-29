@@ -1,5 +1,4 @@
-# Quran-tin
-![tin](tin.png)
+# Quran-tin ![tin](tin.png)
 
 simple app for reading Quran with auto-scroll coded with Python and Kivy
 
@@ -7,7 +6,7 @@ simple app for reading Quran with auto-scroll coded with Python and Kivy
 
 ## download
 
-![download](https://archive.org/download/Quran_tin/Quran-tin-1.0.apk)
+#### Quran_tin v1.0.apk (146.3 M) : [download here](https://archive.org/download/Quran_tin/Quran-tin-1.0.apk)
 
 ## utilities used
 
