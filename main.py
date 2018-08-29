@@ -42,8 +42,8 @@ from kivy.uix.progressbar import ProgressBar
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.textinput import TextInput
-from kivy.uix.widget import Widget
+# from kivy.uix.textinput import TextInput
+# from kivy.uix.widget import Widget
 
 from kivy.animation import Animation, AnimationTransition
 from kivy.uix.scrollview import ScrollView
@@ -271,8 +271,8 @@ Builder.load_string('''
 
     GridLayout:
         id: kb
-        size_hint: (.6, .30)
-        pos_hint: {'x':.2, 'y':.55}
+        size_hint: (.6, .40)
+        pos_hint: {'x':.2, 'y':.53}
         rows: 6
 
 
@@ -572,6 +572,7 @@ class Tin(FloatLayout):
     isspd_dwn= 0
     step = 1
     mem = 0
+    cnt = 0
     global curt_page
     
     #ti = ObjectProperty(None)
@@ -597,7 +598,10 @@ class Tin(FloatLayout):
 
         self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
 
-        self.updt_pb()
+        self.cnt+=1
+        if self.cnt == 10:
+            self.updt_pb()
+            self.cnt=0
         #many calculation in the next line of code : 
         #1-sv.scroll_y because scroll_y is reversed
         #LAST_PAGE-1 
@@ -624,19 +628,13 @@ class Tin(FloatLayout):
         # for i in range(end, LAST_PAGE+1):
         #     bl.children[LAST_PAGE- i].source = 'free.jpg'
 
-        def refresh():
-            c=0
+        if self.mem != self.curt_page:
             for i in range(beg, end+1):
-                c+=1
                 strg= ('pages/page_' + str(i) + '.jpg')
                 bl.children[LAST_PAGE- i].source = strg
                 bl.children[LAST_PAGE- i].size_hint_x = 1
                 self.mem = self.curt_page
-                # print("in threath" + str(c))
-            
 
-        if self.mem != self.curt_page:
-            refresh()
             #the second choice for asyncronous image loading
             #is using the thread as folowing:
             # threading.Thread(target = refresh()).start()
@@ -857,7 +855,7 @@ class TinApp(App):
 
 
         sv.scroll_y = 1 - float(self.curt_page)/604
-        Clock.schedule_interval(main_wdg.update, 1.0 / 60.0)
+        Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
         return main_wdg
 
     def on_stop(self):
