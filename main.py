@@ -1,16 +1,12 @@
 '''
 author  :   Faisal Adraji
 email   :   faisal.adraji@gmail.com
-version :   0.0
+version :   1.0
 start   :   12-2017
 kivy.require("1.9.0")
+kivy.use("1.10.0")
 '''
 
-
-#import sys
-#sys.path.append("/storage/emulated/0/kivy/Tin")
-
-# import threading
 import kivy
 kivy.require("1.9.0")
 
@@ -19,55 +15,39 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-# from kivy import Config
-# Config.set('graphics', 'multisamples', 0)
-
-# from jnius import autoclass
-
-# # all this to prevent device sleep
-# activity = autoclass('org.renpy.android.PythonActivity')
-# # PythonActivity = autoclass('org.renpy.android.PythonActivity')
-# v = autoclass('android.view.View')
-# params = autoclass('android.view.WindowManager$LayoutParams')
-# from android.runnable import run_on_ui_thread
-
+from kivy.animation import Animation, AnimationTransition
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.compat import string_types
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
+from kivy.lang import Builder
+from kivy.metrics import sp, dp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.progressbar import ProgressBar
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-# from kivy.uix.textinput import TextInput
-# from kivy.uix.widget import Widget
-
-from kivy.animation import Animation, AnimationTransition
+from kivy.uix.progressbar import ProgressBar
 from kivy.uix.scrollview import ScrollView
-from kivy.metrics import sp, dp
-from kivy.compat import string_types
 from kivy.weakproxy import WeakProxy
 
-
-# from tinsv import MyScrollView
-
-
+#global contantes
 FIRST_PAGE= 0
 LAST_PAGE= 603
-SPEED_STEP= 1000
 INITIAL_SPEED= 10000
 INITIAL_SIZE= 500
 ANIM_STEP= 1/30.0
 
+#global variable
 scrolling = 0
 
-from kivy.lang import Builder
-
+#build app with kv language
 Builder.load_string('''
 <Tin>:
+
+# custom scrollview widget that support all 604 pages
 
     TinScrollView:
         id: sv
@@ -79,9 +59,7 @@ Builder.load_string('''
             orientation: 'vertical'
             #on_touch_down: root.hide_kb()
 
-
-
-#page bar
+# page bar, in the bottom
 
     Image:
         id: lbl_bg
@@ -91,7 +69,7 @@ Builder.load_string('''
         allow_stretch: True
 
     Label:
-        id: lbl
+        id: lbl_page
         text: 'void'
         markup: True
         size_hint: (.2, .05)
@@ -116,26 +94,21 @@ Builder.load_string('''
         pos_hint: {'x':.85, 'y':.0}
         on_press: root.autoscroll(sv, box, autoscroll_btn)
 
+# head button with progress bar inside
 
-#head button with progress bar inside him
-
-
-    # Button:
-    #     id: menu_btn
-    #     size_hint: (.05, .05)
-    #     pos_hint: {'x':.4725, 'y':.93}
-    #     on_press: root.show_menu()
     Button:
         id: menu_btn
         size_hint: (1, .1)
         pos_hint: {'x':.0, 'y':.93}
         on_press: root.hide_menu() if root.ismenu else root.show_menu() 
+
     ProgressBar:
         id: pb
         size_hint: (1, .04)
         pos_hint: {'x':.0, 'y':.93}
         height: '92dp'
         value: 0
+
     Label:
         id: lbl_hizb_bar
         font_name: 'arial.ttf'
@@ -143,12 +116,7 @@ Builder.load_string('''
         size_hint: (.8 , .1)
         pos_hint: {'x':.2, 'y':.935}
 
-
-    
-
-# menu
-
-
+# config menu
 
     FloatLayout:
         id: menu
@@ -188,8 +156,6 @@ Builder.load_string('''
             pos_hint: {'x':.17, 'y':.8}
             #font_size: 30
             color: 1, 1, 0, 1
-            
-
                 
         Label:
             font_name: 'arial.ttf'
@@ -237,16 +203,17 @@ Builder.load_string('''
         BoxLayout:
             size_hint: (.66, .1)
             pos_hint: {'x':.17, 'y':.2}
-
             Button:
                 id: spd_dwn_btn
                 text: '-'
                 on_press: root.isspd_dwn = 1
                 on_release: root.isspd_dwn = 0
+
             TinLabel:
                 id: lbl_scrl_spd
                 text: ''
                 markup: True
+
             Button:
                 id: spd_up_btn
                 text: '+'
@@ -265,16 +232,13 @@ Builder.load_string('''
                 text: u'\ufe94\ufea4\ufed4\ufebb\u0020\ufead\ufe8e\ufef4\ufe98\ufea7\ufe8d' #utf code means page in arabic
                 on_press: root.hide_kb() if root.iskb else root.show_kb()
 
-
-#keyboard
-
+# custom keyboard
 
     GridLayout:
         id: kb
         size_hint: (.6, .40)
         pos_hint: {'x':.2, 'y':.53}
         rows: 6
-
 
         Button:
             text: u'1'
@@ -305,6 +269,7 @@ Builder.load_string('''
         Button:
             text: u'9'
             on_press: root.enter_number(page_val, 9)
+
         Button:
             text: u'<-'
             on_press: page_val.text = ''
@@ -317,6 +282,7 @@ Builder.load_string('''
             font_name: 'arial.ttf'
             text: u'\ufee1\ufe97'
             on_press: root.goto_page(sv, box, page_val)
+
         TinLabel:
             opacity: 0
         ScreenLabel:
@@ -326,9 +292,7 @@ Builder.load_string('''
         TinLabel:
             opacity:0
 
-
-
-#legend image
+# legend image
 
     FloatLayout:
         id: lgd
@@ -350,10 +314,12 @@ Builder.load_string('''
             source: 'legend.png'
             allow_stretch: True
 
-
-
     ''')
 
+'''
+rewrite the init method of this class from kivy, in order to refresh 
+animation "ANIM_STEP" time instead of looping continously
+'''
 class TinAnimation(Animation):
     def __init__(self, **kw):
         super(TinAnimation, self).__init__()
@@ -367,11 +333,13 @@ class TinAnimation(Animation):
         self._animated_properties = kw
         self._widgets = {}
 
+"""
+custom scrollview widget based on kivy's one, with additional feature:
 
-
-
-
-
+-> scroll_to method with custom duration 'd'
+-> lock touch scroll when auto-scrolling
+->  custom friction coeficient
+"""
 class TinScrollView(ScrollView):
     spd = 10000
     def stop(self):
@@ -514,7 +482,7 @@ class TinScrollView(ScrollView):
         self._touch = touch
         uid = self._get_uid()
 
-        #block touch scroll when auto-scrolling
+#-------the modified part : block touch scroll when auto-scrolling
         if scrolling:
             return
         
@@ -531,9 +499,11 @@ class TinScrollView(ScrollView):
             self._scroll_x_mouse = self.scroll_x
         if self.do_scroll_y and self.effect_y and not ud['in_bar_y']:
             self._effect_y_start_height = self.height
+#-----------modified part:
             #searched night and morning to find out
             #how to modify scroll friction, default is 0.05
             self.effect_y.friction = 0.05
+            
             self.effect_y.start(touch.y)
             self._scroll_y_mouse = self.scroll_y
 
@@ -542,6 +512,7 @@ class TinScrollView(ScrollView):
                                 self.scroll_timeout / 1000.)
         return True
 
+#custom label with solid background
 class TinLabel(Label):
     def on_size(self, *args):
         self.canvas.before.clear()
@@ -549,6 +520,7 @@ class TinLabel(Label):
             Color(.5, .5, .5, 1)
             Rectangle(pos=self.pos, size=self.size)
 
+#same here with black color
 class ScreenLabel(Label):
     def on_size(self, *args):
         self.canvas.before.clear()
@@ -556,13 +528,7 @@ class ScreenLabel(Label):
             Color(0, 0, 0, 1)
             Rectangle(pos=self.pos, size=self.size)
 
-
-
-
-
-
 class Tin(FloatLayout):
-
 
     ismenu = 1
     iskb = 1
@@ -585,7 +551,7 @@ class Tin(FloatLayout):
         sv = self.ids.sv
         lbl_spd = self.ids.lbl_scrl_spd
         lbl_siz = self.ids.lbl_viw_siz
-        lbl = self.ids.lbl
+        lbl_page= self.ids.lbl_page
 
         if self.isfirsttime:
             self.hide_kb()
@@ -593,40 +559,31 @@ class Tin(FloatLayout):
             self.hide_menu()
             self.isfirsttime = 0
 
+        #handle the key with repetition
         self.check_key_rep(bl, sv)
 
-
+        #update the current page value
         self.curt_page = int(((1-sv.scroll_y)*(LAST_PAGE))+1.5)
 
+        #update progress bar value 1 time in ten loop
         self.cnt+=1
         if self.cnt == 10:
             self.updt_pb()
             self.cnt=0
-        #many calculation in the next line of code : 
-        #1-sv.scroll_y because scroll_y is reversed
-        #LAST_PAGE-1 
-        #+1.5 is for updating page number at the midle of page 
-        lbl.text = str(self.curt_page)
+
+        # update all values of labels and buttons text
+        lbl_page.text = str(self.curt_page)
         self.ids.menu_btn.text = str(self.tell_hizb())
         lbl_spd.text = str(sv.spd)
         lbl_siz.text = str(bl.size_hint[1])
 
-        #he next linesare for manual page's texture buffer handler
-
+        #loading image only when scrolling to avoid memory overload (remember 604 pages)
+        #1-sv.scroll_y because scroll_y is reversed 
         mid= int(((1-sv.scroll_y)*(LAST_PAGE)))
-
         beg= mid-1
         end= mid+2
         if beg < 0 : beg = 0
         if end > LAST_PAGE : end = LAST_PAGE
-
-
-
-        # for i in range(0, beg+1):
-        #     bl.children[LAST_PAGE- i].source = 'free.jpg'
-
-        # for i in range(end, LAST_PAGE+1):
-        #     bl.children[LAST_PAGE- i].source = 'free.jpg'
 
         if self.mem != self.curt_page:
             for i in range(beg, end+1):
@@ -635,13 +592,8 @@ class Tin(FloatLayout):
                 bl.children[LAST_PAGE- i].size_hint_x = 1
                 self.mem = self.curt_page
 
-            #the second choice for asyncronous image loading
-            #is using the thread as folowing:
-            # threading.Thread(target = refresh()).start()
-
     #functions for buttons
 
-    #@run_on_ui_thread
     def autoscroll(self, sv, box, autoscroll_btn):
         rev_btn = self.ids.rev_btn
         if not scrolling :
@@ -651,8 +603,6 @@ class Tin(FloatLayout):
             global scrolling
             scrolling = 1
             autoscroll_btn.text = u'\ufed1\ufed7\ufeed\ufe98\ufedf\ufe8d' #stop in arabic
-            # activity.mActivity.getWindow().addFlags(params.FLAG_KEEP_SCREEN_ON)
-
         else :
             rev_btn.background_color = 1,1,1,1
             sv.stop()
@@ -665,12 +615,6 @@ class Tin(FloatLayout):
             sv.spd = sv.spd - self.step
             if scrolling:
                 sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
-            # print sv.spd * (LAST_PAGE - self.curt_page)
-            # print LAST_PAGE
-            # print self.curt_page
-            # print sv.spd
-            #popup = Popup(title='im scrolling', size_hint=(0.5, 0.5))
-            #popup.open()
         
     def spd_up(self, sv, box):
         sv.spd = sv.spd + self.step
@@ -685,20 +629,20 @@ class Tin(FloatLayout):
         global scrolling
         scrolling = 0
     
+    #here special function we want the button to repeat
+    #on_press, but don't forget to add a boolean like bellow
     def check_key_rep(self, box, sv):
         if self.isspd_up and sv.spd < 400:
             self.spd_up(sv, box)
         
-        if self.isspd_dwn and sv.spd > 20:
+        if self.isspd_dwn and sv.spd > 0:
             self.spd_dwn(sv, box)
-
 
     def siz_up(self, box):
         box.size_hint[1]+= 20
     
     def siz_dwn(self, box):
         box.size_hint[1]-= 20
-
 
     def show_menu(self):
         if not self.ismenu:
@@ -738,22 +682,13 @@ class Tin(FloatLayout):
             self.ids.lgd.size_hint_x = 0
             self.ids.lgd.size_hint_y = 0
             self.islgd = 0
+
+    #scroll back, on when auto-scrolling only
     def reverse(self,sv,box):
         if scrolling:
             sv.stop()
             sv.scroll_y += 0.0002
             sv.scroll_to(box.children[0], d= sv.spd * (LAST_PAGE - self.curt_page) )
-
-
-    # image = Image(source='legend.png')
-    
-    # popup = Popup(title='alwan legend',
-    #                 size_hint=(0.98, 0.98),
-    #                 content=image)
-
-    # image.bind(on_touch_down=popup.dismiss)
-
-    # popup.open()
 
     def enter_number(self, page_val, number):
         page_val.text += (str)(number)
@@ -762,6 +697,7 @@ class Tin(FloatLayout):
         if page_val.text == '0':
             page_val.text = u''
 
+    #get the hizb number from the current page number
     def tell_hizb(self):
         x = (self.curt_page-2)/10 +1
         if x > 60:
@@ -778,12 +714,25 @@ class Tin(FloatLayout):
             self.ids.pb.value = 0
             return
         x = (self.curt_page-2)/10 +1
-        #first failed method
-        # self.ids.pb.value = ((self.curt_page-2)%10)*10
-        #second failed methode
-        # self.ids.pb.value = (1 - self.ids.sv.scroll_y * 60 * 100)%100
-        #correct method -for now !-
-        #self.ids.pb.value = ( (1- self.ids.sv.scroll_y - (1-605.5/604)) - (float((((self.curt_page -2) /10)*10)+2)/604) )*100*60
+
+        """
+        this formula convert scroll y position [0,1] to progress bar 
+        value [0,100], by correcting inverted scroll y position then
+        adapt to number 60 and exclude some of the first and last pages
+        from convertion
+        t total pages
+        p principales pages concerned by index
+        b other pages before principales pages
+        a other pages after principales pages
+        i index of principale page
+
+        first formula :
+        ((b*p/t) + (i*p/t/p))*p
+
+        by simplification become :
+        (i-b/t)*t/p
+
+        """
         i = 1- self.ids.sv.scroll_y
         i *= 60
         i -= 0.05
@@ -802,36 +751,28 @@ class Tin(FloatLayout):
 
 class TinApp(App):
 
+    #window object of the app
     global Window
+    #principal widget of the app
     global wdg
 
 
     def build(self):
 
-        # @run_on_ui_thread
-        # def android_setflag(self):
-        #     PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
-
-        #str(int(5000)        
-        #Window.clearcolor = (.95,.95,.95,1)
-        #Window.size = (700, 1400)
         Window.set_title('Quran Tin')
         self.title = 'Quran Tin'
         self.icon = 'tin.png'
-        #self.presplash = Image(source= 'tin_splash.png', allow_stretch= False)
         self.wdg = Tin(size= Window.size)
         main_wdg = self.wdg
 
         #finaly found the way for calling object from kv file
         sv  = main_wdg.ids.sv
         box = main_wdg.ids.box
-
-
-        lbl = main_wdg.ids.lbl    
+        lbl_page = main_wdg.ids.lbl_page   
         lbl_scrl_spd = main_wdg.ids.lbl_scrl_spd
         lbl_viw_siz = main_wdg.ids.lbl_viw_siz
 
-        #restore last session7
+        #restore last session auto-save
         try:
             f = open("save.dat")
             self.curt_page = f.readline()
@@ -840,24 +781,22 @@ class TinApp(App):
             f.close()
         except:
             self.curt_page = 0
-            box.size_hint[1] = 500
+            box.size_hint[1] = 550
             sv.spd = 80
         
         
-    # initializing graphic objects
+    # initializing graphic objects that can't be on kv language
         
         #fill boxlayout with pages
-        # for i in reversed(range(FIRST_PAGE, LAST_PAGE)):
         for i in range(FIRST_PAGE, LAST_PAGE+1):
-            #strg =('pages/page_' + str(i) + '.jpg')
             img = Image(allow_stretch= True)
             box.add_widget(img, len(box.children))
-
 
         sv.scroll_y = 1 - float(self.curt_page)/604
         Clock.schedule_interval(main_wdg.update, 1.0 / 30.0)
         return main_wdg
 
+    #when user exit the app auto-save his session
     def on_stop(self):
         curt_page = self.wdg.curt_page
         size = self.wdg.ids.box.size_hint[1]
@@ -866,9 +805,7 @@ class TinApp(App):
         f.write( str(curt_page -1) + '\n')  
         f.write( str(size) + '\n')
         f.write( str(spd) )
-        # f.write(  str((1 - SCROLL_Y/1)*604)  )  
         f.close()
-
 
 
 if __name__ == '__main__':

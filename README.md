@@ -40,7 +40,9 @@ buildozer -v android debug
 
 ## version list
 
-redesigned menu, easy to use	v0.12*
+first stable release		v1.0*
+
+redesigned menu, easy to use	v0.12
 
 correct hizb barre calculation	v0.11
 
@@ -57,8 +59,8 @@ correcte app power glutonary	v0.6
 translate app text to arabic	v0.5
 
 correcte scroll calculation	v0.4
-
-design stable menu		v0.3
+&
+design stable menu
 
 auto-saving session		v0.2
 
